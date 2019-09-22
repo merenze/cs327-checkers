@@ -1,3 +1,9 @@
+/*
+ * inpututil.c
+ *
+ * Matthew Renze
+ */
+
 #include <stdio.h>
 #include "inpututil.h"
 
@@ -5,7 +11,7 @@ int iswhitespace(char);
 
 void skipline(char*);
 
-const char whitespace[] = " \n\t\r";
+const char whitespace[] = " :\n\t\r";
 
 void next_token(char[] token, int size) {
 	char ch;	// Char being operated on.

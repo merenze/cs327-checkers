@@ -1,5 +1,5 @@
 /*
- * libutil.h
+ * inpututil.h
  *
  * Contains functions for managing standard input.
  *
@@ -11,7 +11,7 @@
 
 /*
  * Get the next complete token from standard input.
- * Tokens are delimited by whitespace: space, newline, tab, and carriage return.
+ * Tokens are delimited by whitespace (space, newline, tab, and carriage return) as well as colon ':'.
  * Comments (everything between '#' and newline) are ignored.
  *
  * char[]	Array in which to store the token.

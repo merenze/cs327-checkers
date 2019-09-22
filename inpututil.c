@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "inpututil.h"
 
 int iswhitespace(char);
 

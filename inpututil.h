@@ -6,8 +6,8 @@
  * Matthew Renze
  */
 
-#ifndef	LIBUTIL_H
-#define	LIBUTIL_H
+#ifndef	INPUTUTIL_H
+#define	INPUTUTIL_H
 
 /*
  * Get the next complete token from standard input.
@@ -25,6 +25,6 @@ void next_token(char[], int);
  * char[]	String to test.
  * char[]	String to test.
  */
-void equals(char[], char[]);
+int equals(char[], char[]);
 
 #endif

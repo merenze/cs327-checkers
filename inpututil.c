@@ -23,7 +23,7 @@ void next_token(char[] token, int size) {
 		} // Else move cursor to next char; done in loop.
 	}
 
-	token[0] = ch;	// We already have the first char of our token.
+:	token[0] = ch;	// We already have the first char of our token.
 	int i;		// Declared outside loop in order to facilitate adding of terminating null char.
 	
 	// Main loop to load chars into token.
@@ -40,7 +40,7 @@ void next_token(char[] token, int size) {
 	token[i] = 0;
 }
 
-int equals(char s1[] char s2[]) {
+int equals(char s1[], char s2[]) {
 	if (sizeof(s1) != sizeof(s2)) {
 		return 0;
 	}

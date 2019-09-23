@@ -17,6 +17,11 @@ int black_turn;		// True if currently black's turn, false if red's.
 int multiple_jumps;	// True if multiple jumps are allowed.
 int no_capture;		// True if capture rule not enforced.
 
+// Some error messages.
+const char ERROR_RULES[] = "Input error: Invalid token in rules. Allowed tokens are \'capture\', \'no capture\', and \'multiple jumps\'.\n";
+const char ERROR_TURN[]  = "Input error: Invalid token in turn. Allowed tokens are \'red\' and \'black\'.\n";
+const char ERROR_BOARD[] = "Input error: Failed to load board. Are there at least 64 valid spaces listed?\n";
+
 // Some helper methods.
 int count_occurrences(char);
 int board_valid();
@@ -46,6 +51,7 @@ void load_config() {
 					next_token(token, LENGTH);
 				} else {
 					valid = 0;
+					printf(ERROR_RULES);
 					break;
 				}
 			} else if (equals(token, "capture")) {
@@ -57,6 +63,7 @@ void load_config() {
 				}
 			} else {
 				valid = 0;
+				printf(ERROR_RULES);
 				break;
 			}
 		} else if (equals(token, "TURN")) {
@@ -67,11 +74,13 @@ void load_config() {
 				black_turn = 1;
 			} else {
 				valid = 0;
+				printf(ERROR_TURN);
 				break;
 			}
 		}
 	}
 	if (!equals(token, "BOARD")) {
+		printf("Invalid input: expected 'BOARD' but found '%s'.\n", token);
 		valid = 0;
 	}
 	if (!valid) {
@@ -82,14 +91,19 @@ void load_config() {
 	// Time to load the board!
 	int row = 0;
 	int col = 0;
+	printf("LOADING BOARD...\n"); // DEBUG
 	while (!equals(token, "MOVES") && !equals(token, "") && row < 8) {
+		printf("\nToken: %s\n", token); // DEBUG
 		if (equals(token, "r") || equals(token, "R") || equals(token, "b") || equals(token, "B") || equals(token, "\"") || equals(token, ".")) {
-			board[row][col] = token[0];
+			printf("Valid. Adding to board[%d][%d]\n", row, col); // DEBUG
+			board[row][col++] = token[0];
 			if (col == 8) {
+				printf("Invalid.\n"); // DEBUG
 				col = 0;
 				row++;
 			}
 		}
+		next_token(token, LENGTH);
 	}
 	valid = board_valid();
 	if (!valid) {
@@ -152,6 +166,7 @@ int board_valid() {
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
 			if (board[i][j] == 0) {
+				printf(ERROR_BOARD);
 				return 0;
 			}
 		}

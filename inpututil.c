@@ -13,7 +13,7 @@ void skipline(char*);
 
 const char whitespace[] = " :\n\t\r";
 
-void next_token(char[] token, int size) {
+void next_token(char token[], int size) {
 	char ch;	// Char being operated on.
 
 	// Skip comments and leading whitespace.
@@ -23,7 +23,7 @@ void next_token(char[] token, int size) {
 		} // Else move cursor to next char; done in loop.
 	}
 
-:	token[0] = ch;	// We already have the first char of our token.
+	token[0] = ch;	// We already have the first char of our token.
 	int i;		// Declared outside loop in order to facilitate adding of terminating null char.
 	
 	// Main loop to load chars into token.
@@ -40,10 +40,15 @@ void next_token(char[] token, int size) {
 	token[i] = 0;
 }
 
-int equals(char s1[], char s2[]) {
-	if (sizeof(s1) != sizeof(s2)) {
+int equals(char s1[], char s2[]) { 
+	// Compare string length first
+	int l1, l2;
+	for (l1 = 0; s1[l1] != 0; l1++);
+	for (l2 = 0; s2[l2] != 0; l2++);
+	if (l1 != l2) {
 		return 0;
 	}
+	// Now check each arg
 	for (int i = 0; s1[i] != 0 && s2[i] != 0; i++) {
 		if (s1[i] != s2[i]) {
 			return 0;
@@ -62,5 +67,5 @@ int iswhitespace(char ch) {
 }
 
 void skipline(char* ch_ptr) {
-	while ((*ch = getchar()) != '\n');
+	while ((*ch_ptr = getchar()) != '\n');
 }

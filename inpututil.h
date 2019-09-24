@@ -1,30 +1,27 @@
 /*
  * inpututil.h
  *
- * Contains functions for managing standard input.
+ * Contains utility functions for handling standard input.
  *
  * Matthew Renze
  */
 
-#ifndef	INPUTUTIL_H
-#define	INPUTUTIL_H
 
 /*
- * Get the next complete token from standard input.
- * Tokens are delimited by whitespace (space, newline, tab, and carriage return) as well as colon ':'.
- * Comments (everything between '#' and newline) are ignored.
+ * Gets the next token from standard input.
+ * Tokens are delimited by space, newline, tab, and carriage return.
+ * Skips commented lines.
  *
- * char[]	Array in which to store the token.
- * int		Maximum allowed length of token. Usually the length of the array.
+ * char[]	String into which token should be loaded.
+ * int		Maximum length of token. Usually equal to size of the passed string.
  */
 void next_token(char[], int);
 
 /*
- * Test whether two strings are equal by comparing each element.
+ * Returns 1 when two strings are equal, else returns 0.
+ * Strings must have a terminating null character.
  *
  * char[]	String to test.
  * char[]	String to test.
  */
 int equals(char[], char[]);
-
-#endif

@@ -1,54 +1,49 @@
-/*
- * inpututil.c
- *
- * Matthew Renze
- */
-
 #include <stdio.h>
-#include "inpututil.h"
-
-int iswhitespace(char);
-
-void skipline(char*);
 
 const char whitespace[] = " :\n\t\r";
 
-void next_token(char token[], int size) {
-	char ch;	// Char being operated on.
+int is_whitespace(char);
 
-	// Skip comments and leading whitespace.
-	while (iswhitespace(ch == getchar()) || ch == '#') {
+void skip_line(char*);
+
+void next_token(char token[], int max) {
+	char ch;	// Where we'll be storing result of getchar().
+
+	// Skip leading whitespace and comments.
+	while (is_whitespace(ch = getchar()) || ch == '#') {
+		// Skip commented lines.
 		if (ch == '#') {
-			skipline(&ch);
-		} // Else move cursor to next char; done in loop.
+			skip_line(&ch);
+		}
 	}
+	// Check for EOF.
+	if (ch == EOF) {
+		token[0] = 0;
+		return;
+	}
+	// We've already loaded one character into ch, since that was our signal to stop the previous loop.
+	token[0] = ch;
+	// Which would make 1 our starting index. Declared outside the loop so it's easier to terminate the string.
+	int i = 1;
 
-	token[0] = ch;	// We already have the first char of our token.
-	int i;		// Declared outside loop in order to facilitate adding of terminating null char.
-	
-	// Main loop to load chars into token.
-	for (i = 1; i < size - 1 && !iswhitespace(ch = getchar()) && ch != EOF; i++) {
-		// Since comments continue until newline, they always denote the end of a token.
+	// Main loop for loading characters into token. Max - 1 guarentees room for terminating character.
+	while (i < max - 1 && !is_whitespace(ch = getchar()) && ch != EOF) {
+		// Since comments continue until \n or EOF, they always signal the end of a token.
 		if (ch == '#') {
-			skipline(&ch);
+			skip_line(&ch);
 			i++;
 			break;
 		}
-		token[i] = ch;
-		
+		token[i++] = ch;
 	}
+	// Terminate string.
 	token[i] = 0;
 }
-
-int equals(char s1[], char s2[]) { 
-	// Compare string length first
-	int l1, l2;
-	for (l1 = 0; s1[l1] != 0; l1++);
-	for (l2 = 0; s2[l2] != 0; l2++);
-	if (l1 != l2) {
+/*
+int equals(char s1[], char s2[]) {
+	if (sizeof(s1) != sizeof(s2)) {
 		return 0;
 	}
-	// Now check each arg
 	for (int i = 0; s1[i] != 0 && s2[i] != 0; i++) {
 		if (s1[i] != s2[i]) {
 			return 0;
@@ -56,8 +51,8 @@ int equals(char s1[], char s2[]) {
 	}
 	return 1;
 }
-
-int iswhitespace(char ch) {
+*/
+int is_whitespace(char ch) {
 	for (int i = 0; whitespace[i] != 0; i++) {
 		if (ch == whitespace[i]) {
 			return 1;
@@ -65,7 +60,7 @@ int iswhitespace(char ch) {
 	}
 	return 0;
 }
-
-void skipline(char* ch_ptr) {
-	while ((*ch_ptr = getchar()) != '\n');
+ 
+void skip_line(char* ch_ptr) {
+	while (((*ch_ptr) = getchar()) != '\n');
 }

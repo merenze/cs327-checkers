@@ -88,6 +88,8 @@ void load_config() {
 	}
 	if (!sequals(token, "MOVES")) {
 		printf("Invalid input: expected 'MOVES' but found diddly.\n");
+		valid = 0;
+		return;
 	}
 }
 
@@ -135,20 +137,10 @@ void get_board(char token[]) {
 	int row = 0;
 	int col = 0;
 	while (row < 8 && token[0] != 0) {
-		/*
-		if (sequals(token, "r") || sequals(token, "R") || sequals(token, "b") || sequals(token, "B") || sequals(token, ".") || sequals(token, "\"")) {
-			board[row][col++] = token[0];
-//			printf("Added %s to board[%d][%d].\n", token, row, col - 1); // DEBUG
-			if (col == 8) {
-				col = 0;
-				row++;
-			}
-		}
-		next_token(token, LENGTH);
-	*/
-		for (int i = 0; token[i] != 0; i++) {
+		for (int i = 0; token[i] != 0 && row < 8; i++) {
 			if(token[i] == 'r' || token[i] == 'R' || token[i] == 'b' || token[i] == 'B' || token[i] == '.' || token[i] == '\"') {
 				board[row][col++] = token[i];
+//				printf("Added '%c' to board[%d][%d].\n", token[i], row, col - 1); // DEBUG
 				if (col == 8) {
 					col = 0;
 					row++;

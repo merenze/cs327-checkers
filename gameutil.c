@@ -77,7 +77,6 @@ void load_config() {
 	}
 	get_board(token);
 	if (!board_valid()) {
-		printf("Invalid input: board invalid. Make sure there are at least 64 of any combination of 'r', 'R', 'b', 'B', '\"', '.'.\n");
 		valid = 0;
 		return;
 	}
@@ -205,11 +204,27 @@ int count_occurrences(char ch) {
 
 // Ensure the board is valid
 int board_valid() {
+	int flipped = board[0][0] != '\"';
+	int redFlag = flipped;
 	for (int i = 0; i < 8; i++) {
+		redFlag = !redFlag;
 		for (int j = 0; j < 8; j++) {
+			// Make sure the space has been initialized.
 			if (board[i][j] == 0) {
+				printf("Invalid input: Invalid board.\n\tIn space %c%d: Found uninitialized space. Are there at least 64 squares defined?\n", j + 97, 8 - i);
 				return 0;
 			}
+			// Make sure red spaces are red, and black spaces are black.
+			// If board is not flipped, space is supposed to be red, and space is not red
+			if (!flipped && redFlag && board[i][j] != '\"') {
+				printf("Invalid input: Invalid board.\n\tIn space %c%d: Expected %s space but found %s space.\n", j + 97, 8 - i, (redFlag ? "red" : "black"), (redFlag ? "black" : "red"));
+				return 0;
+			}
+			// If board IS flipped, space is supposed to be red, and space is not red.
+			if (flipped && redFlag && board[i][j] == '.') {
+				return 0;
+			}
+			redFlag = !redFlag; // && j != 7; // Flag the next square as the opposite color, unless it starts on a new row.
 		}
 	}
 	return 1;

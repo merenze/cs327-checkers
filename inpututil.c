@@ -39,19 +39,7 @@ void next_token(char token[], int max) {
 	// Terminate string.
 	token[i] = 0;
 }
-/*
-int equals(char s1[], char s2[]) {
-	if (sizeof(s1) != sizeof(s2)) {
-		return 0;
-	}
-	for (int i = 0; s1[i] != 0 && s2[i] != 0; i++) {
-		if (s1[i] != s2[i]) {
-			return 0;
-		}
-	}
-	return 1;
-}
-*/
+
 int is_whitespace(char ch) {
 	for (int i = 0; whitespace[i] != 0; i++) {
 		if (ch == whitespace[i]) {

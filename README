@@ -1,0 +1,8 @@
+README for semester project, part 1.
+Matthew Renze
+====================================
+Part one contains most of the logic for initializing the game from the specifications given via standard input.
+
+Standard input is first accessed by inpututil.c, and is broken into tokens divided by whitespace and colons. Tokens are given to gameutil.c, which parses them for game rules, turn, and board configuration.
+
+Main function accesses this information and prints the output.

@@ -19,14 +19,14 @@ int no_capture;		// True if capture rule not enforced.
 
 // Some error messages.
 const char ERROR_RULES[] = "Input error: Invalid token in rules. Allowed tokens are \'capture\', \'no capture\', and \'multiple jumps\'.\n";
-const char ERROR_TURN[]  = "Input error: Invalid token in turn. Allowed tokens are \'red\' and \'black\'.\n";
-const char ERROR_BOARD[] = "Input error: Failed to load board. Are there at least 64 valid spaces listed?\n";
 
 // Some helper methods.
 int count_occurrences(char);
 int board_valid();
 void get_rules(char[]);
 void get_board(char[]);
+int move_valid(char[]);
+int get_moves(char[]);
 void print_board();
 
 // The main dish.
@@ -60,7 +60,7 @@ void load_config() {
 	} else if (sequals(token, "black")) {
 		black_turn = 1;
 	} else {
-		printf("Invalid token: expected 'red' or 'black' but found '%s'.\n", token);
+		printf("Invalid input: 'TURN' section.\n\tExpected 'red' or 'black' but found '%s'.\n", token);
 		valid = 0;
 		return;
 	}
@@ -90,6 +90,11 @@ void load_config() {
 		valid = 0;
 		return;
 	}
+/*	I cannot figure out how to signal the end of the file. Apparently flagging it when I reach EOF in inpututil.c is insufficient, because I keep ending up in an infinite loop.
+	if (!get_moves(token)) {
+		valid = 0;
+	}
+*/
 }
 
 void get_rules(char token[]) {
@@ -152,8 +157,13 @@ void get_board(char token[]) {
 }
 
 int get_moves(char token[]) {
-	next_token(token, 6);
-	// TODO
+	next_token(token, 7);
+	while (token[0] != 0) {
+		if (!move_valid(token)) {
+			printf("Invalid input: 'TOKENS' section.\n\tExpected a move but found '%s'.\n", token);
+			return 0;
+		}
+	}
 	return 1;
 }
 

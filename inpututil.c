@@ -6,7 +6,13 @@ int is_whitespace(char);
 
 void skip_line(char*);
 
+int end_reached = 0;
+
 void next_token(char token[], int max) {
+	if (end_reached) {
+		token[0] = 0;
+		return;
+	}
 	char ch;	// Where we'll be storing result of getchar().
 
 	// Skip leading whitespace and comments.
@@ -35,6 +41,9 @@ void next_token(char token[], int max) {
 			break;
 		}
 		token[i++] = ch;
+	}
+	if (ch == EOF) {
+		end_reached = 1;
 	}
 	// Terminate string.
 	token[i] = 0;

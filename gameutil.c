@@ -31,19 +31,31 @@ void print_board();
 
 // The main dish.
 void load_config() {
+	// Use this to check for EOF
+	int has_input;
 	// Some variables and stuff
 	char token[LENGTH];
-	next_token(token, LENGTH);
-	multiple_jumps = 0
-		;
+	has_input = next_token(token, LENGTH);
+	multiple_jumps = 0;
+
+	if (!has_input) {
+		printf("Invalid input: no input found.");
+		valid = 0;
+		return;
+	}
 	// Load rules
 	if (!sequals(token, "RULES")) {
 		printf("Invalid input: Expected 'RULES' but found '%s'.\n", token);
 		valid = 0;
 		return;
 	}
-	next_token(token, LENGTH);
-	get_rules(token);	
+	has_input = next_token(token, LENGTH);
+	if (!has_input) {
+		printf("Invalid input: Expected 'TURN' but found EOF.\n");
+		valid = 0;
+		return;
+	}
+	get_rules(token);
 	if (!valid) {
 		return;
 	}
@@ -54,7 +66,10 @@ void load_config() {
 		valid = 0;
 		return;
 	}
-	next_token(token, LENGTH);
+	has_input = next_token(token, LENGTH);
+	if (!has_input) {
+		printf("Invalid input: Turn error.\n\tExpected 'red' or 'black' but found EOF.");
+	}
 	if (sequals(token, "red")) {
 		black_turn = 0;
 	} else if (sequals(token, "black")) {
@@ -69,7 +84,12 @@ void load_config() {
 	}
 
 	// Load board
-	next_token(token, LENGTH);
+	has_input = next_token(token, LENGTH);
+	if (!has_input) {
+		printf("Invalid input: Expected 'BOARD' but found EOF.\n");
+		valid = 0;
+		return;
+	}
 	if (!sequals(token, "BOARD")) {
 		printf("Invalid input: Expected 'BOARD' but found '%s'.\n", token);
 		valid = 0;
@@ -90,20 +110,28 @@ void load_config() {
 		valid = 0;
 		return;
 	}
-/*	I cannot figure out how to signal the end of the file. Apparently flagging it when I reach EOF in inpututil.c is insufficient, because I keep ending up in an infinite loop.
+//*	I cannot figure out how to signapl the end of the file. Apparently flagging it when I reach EOF in inpututil.c is insufficient, because I keep ending up in an infinite loop.
 	if (!get_moves(token)) {
 		valid = 0;
 	}
-*/
+//*/
 }
 
 void get_rules(char token[]) {
 	while (!sequals(token, "TURN")) {
 		// Check for capture.
-		next_token(token, LENGTH);
+		if (!next_token(token, LENGTH)) {
+			printf("Invalid input: Rules error.\n\tExpected rule but found EOF.\n");
+			valid = 0;
+			return;
+		}
 		if (sequals(token, "no")) {
 //			printf("Token 'no' found. Checking for 'capture'.\n"); // DEBUG
-			next_token(token, LENGTH);
+			if (!next_token(token, LENGTH)) {
+				printf("Invalid input: Rules error.\n\tExpected 'capture' but found EOF.\n");
+				valid = 0;
+				return;
+			}
 			if (sequals(token, "capture")) {
 //				printf("Token 'capture' found. Setting no_capture to 1.\n"); // DEBUG
 				no_capture = 1;
@@ -117,11 +145,17 @@ void get_rules(char token[]) {
 			no_capture = 0;
 		} else if (sequals(token, "multiple")) {
 //			printf("Token 'multiple' found. Checking for 'jumps'.\n"); // DEBUG
-			next_token(token, LENGTH);
+			if (!next_token(token, LENGTH)) {
+				printf("Invalid input: Rules error.\n\tExpected 'capture' but found EOF.\n");
+			}
 			if (sequals(token, "jumps")) {
 //				printf("Token 'jumps' found. Setting multiple_jumps to 1.\n"); // DEBUG
 				multiple_jumps = 1;
-				next_token(token, LENGTH);
+				if (!next_token(token, LENGTH)) {
+					printf("Invalid input: Rules error.\n\tExpected rule but found EOF.\n");
+					valid = 0;
+					return;
+				}
 			} else {
 //			printf("Token 'jumps' not found after 'multiple'.\n"); // DEBUG
 				printf(ERROR_RULES);
@@ -137,7 +171,11 @@ void get_rules(char token[]) {
 }
 
 void get_board(char token[]) {
-	next_token(token, LENGTH);
+	if (!next_token(token, LENGTH)) {
+		printf("Invalid input: Board error. EOF reached.\n");
+		valid = 0;
+		return;
+	}
 	int row = 0;
 	int col = 0;
 	while (row < 8 && token[0] != 0) {
@@ -151,14 +189,17 @@ void get_board(char token[]) {
 				}
 			}
 		}
-		next_token(token, LENGTH);
+		if (!next_token(token, LENGTH)) {
+			printf("Invalid input: Board error. EOF reached.\n");
+			valid = 0;
+			return;
+		}
 	}
 //	print_board(); // DEBUGG
 }
 
 int get_moves(char token[]) {
-	next_token(token, 7);
-	while (token[0] != 0) {
+	while (next_token(token, 7)) {
 		if (!move_valid(token)) {
 			printf("Invalid input: 'TOKENS' section.\n\tExpected a move but found '%s'.\n", token);
 			return 0;

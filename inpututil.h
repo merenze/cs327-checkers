@@ -15,7 +15,7 @@
  * char[]	String into which token should be loaded.
  * int		Maximum length of token. Usually equal to size of the passed string.
  */
-void next_token(char[], int);
+int next_token(char[], int);
 
 /*
  * Returns 1 when two strings are equal, else returns 0.

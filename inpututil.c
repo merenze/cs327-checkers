@@ -6,13 +6,7 @@ int is_whitespace(char);
 
 void skip_line(char*);
 
-int end_reached = 0;
-
-void next_token(char token[], int max) {
-	if (end_reached) {
-		token[0] = 0;
-		return;
-	}
+int next_token(char token[], int max) {
 	char ch;	// Where we'll be storing result of getchar().
 
 	// Skip leading whitespace and comments.
@@ -24,8 +18,7 @@ void next_token(char token[], int max) {
 	}
 	// Check for EOF.
 	if (ch == EOF) {
-		token[0] = 0;
-		return;
+		return 0;
 	}
 	// We've already loaded one character into ch, since that was our signal to stop the previous loop.
 	token[0] = ch;
@@ -33,7 +26,10 @@ void next_token(char token[], int max) {
 	int i = 1;
 
 	// Main loop for loading characters into token. Max - 1 guarentees room for terminating character.
-	while (i < max - 1 && !is_whitespace(ch = getchar()) && ch != EOF) {
+	while (i < max - 1 && !is_whitespace(ch = getchar())) {
+		if (ch == EOF) {
+			return 0;
+		}
 		// Since comments continue until \n or EOF, they always signal the end of a token.
 		if (ch == '#') {
 			skip_line(&ch);
@@ -42,11 +38,9 @@ void next_token(char token[], int max) {
 		}
 		token[i++] = ch;
 	}
-	if (ch == EOF) {
-		end_reached = 1;
-	}
 	// Terminate string.
 	token[i] = 0;
+	return 1;
 }
 
 int is_whitespace(char ch) {

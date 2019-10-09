@@ -18,19 +18,19 @@ int multiple_jumps;	// True if multiple jumps are allowed.
 int no_capture;		// True if capture rule not enforced.
 
 // Some error messages.
-const char ERROR_RULES[] = "Input error: Invalid token in rules. Allowed tokens are \'capture\', \'no capture\', and \'multiple jumps\'.\n";
+const char ERROR_RULES[] = "Input error: Invalid token in rules. Allowed tokens are 'capture', 'no capture', and 'multiple jumps'.\n";
 
 // Some helper methods.
 int count_occurrences(char);
 int board_valid();
-void get_rules(char[]);
-void get_board(char[]);
-int move_valid(char[]);
-int get_moves(char[]);
+int get_rules(char*);
+int get_board(char*);
+int move_valid(char*);
+int get_moves(char*);
 void print_board();
 
 // The main dish.
-void load_config() {
+int load_config() {
 	// Use this to check for EOF
 	int has_input;
 	// Some variables and stuff
@@ -40,34 +40,27 @@ void load_config() {
 
 	if (!has_input) {
 		printf("Invalid input: no input found.");
-		valid = 0;
-		return;
+		return 0;
 	}
 	// Load rules
 	if (strcmp(token, "RULES")) {
 		printf("Invalid input: Expected 'RULES' but found '%s'.\n", token);
-		valid = 0;
-		return;
+		return 0;
 	}
-	has_input = next_token(token, LENGTH);
-	if (!has_input) {
+	if (!next_token(token, LENGTH)) {
 		printf("Invalid input: Expected 'TURN' but found EOF.\n");
-		valid = 0;
-		return;
+		return 0;
 	}
-	get_rules(token);
-	if (!valid) {
-		return;
+	if (!get_rules(token)) {
+		return 0;
 	}
 
 	// Load turn
 	if (strcmp(token, "TURN")) {
 		printf("Invalid input: Expected 'TURN' but found '%s'.\n", token);
-		valid = 0;
-		return;
+		return 0;
 	}
-	has_input = next_token(token, LENGTH);
-	if (!has_input) {
+	if (!next_token(token, LENGTH)) {
 		printf("Invalid input: Turn error.\n\tExpected 'red' or 'black' but found EOF.");
 	}
 	if (!strcmp(token, "red")) {
@@ -76,67 +69,59 @@ void load_config() {
 		black_turn = 1;
 	} else {
 		printf("Invalid input: 'TURN' section.\n\tExpected 'red' or 'black' but found '%s'.\n", token);
-		valid = 0;
-		return;
-	}
-	if (!valid) {
-		return;
+		return 0;
 	}
 
 	// Load board
-	has_input = next_token(token, LENGTH);
-	if (!has_input) {
+	if (!next_token(token, LENGTH)) {
 		printf("Invalid input: Expected 'BOARD' but found EOF.\n");
-		valid = 0;
-		return;
+		return 0;
 	}
 	if (strcmp(token, "BOARD")) {
 		printf("Invalid input: Expected 'BOARD' but found '%s'.\n", token);
-		valid = 0;
-		return;
+		return 0;
 	}
-	get_board(token);
+	if (!get_board(token)) {
+		return 0;
+	}
 	if (!board_valid()) {
-		valid = 0;
-		return;
+		return 0;
 	}
 
 	// Move cursor to "MOVES"
-	while (strcmp(token, "MOVES") && token[0] != 0) {
+	while (strcmp(token, "MOVES") && token[0]) {
 		next_token(token, LENGTH);
 	}
 	if (strcmp(token, "MOVES")) {
 		printf("Invalid input: expected 'MOVES' but found diddly.\n");
-		valid = 0;
-		return;
+		return 0;
 	}
 	if (!get_moves(token)) {
-		valid = 0;
+		return 0;
 	}
+
+	return 1;
 }
 
-void get_rules(char token[]) {
+int get_rules(char* token) {
 	while (strcmp(token, "TURN")) {
 		// Check for capture.
 		if (!next_token(token, LENGTH)) {
 			printf("Invalid input: Rules error.\n\tExpected rule but found EOF.\n");
-			valid = 0;
-			return;
+			return 0;
 		}
 		if (!strcmp(token, "no")) {
 //			printf("Token 'no' found. Checking for 'capture'.\n"); // DEBUG
 			if (!next_token(token, LENGTH)) {
 				printf("Invalid input: Rules error.\n\tExpected 'capture' but found EOF.\n");
-				valid = 0;
-				return;
+				return 0;
 			}
 			if (!strcmp(token, "capture")) {
 //				printf("Token 'capture' found. Setting no_capture to 1.\n"); // DEBUG
 				no_capture = 1;
 			} else {
-				valid = 0;
 				printf(ERROR_RULES);
-				return;
+				return 0;
 			}
 		} else if (!strcmp(token, "capture")) {
 //			printf("Token 'capture' found. Setting no_capture to 0.\n"); // DEBUG
@@ -145,34 +130,32 @@ void get_rules(char token[]) {
 //			printf("Token 'multiple' found. Checking for 'jumps'.\n"); // DEBUG
 			if (!next_token(token, LENGTH)) {
 				printf("Invalid input: Rules error.\n\tExpected 'capture' but found EOF.\n");
+				return 0;
 			}
 			if (!strcmp(token, "jumps")) {
 //				printf("Token 'jumps' found. Setting multiple_jumps to 1.\n"); // DEBUG
 				multiple_jumps = 1;
 				if (!next_token(token, LENGTH)) {
 					printf("Invalid input: Rules error.\n\tExpected rule but found EOF.\n");
-					valid = 0;
-					return;
+					return 0;
 				}
 			} else {
 //			printf("Token 'jumps' not found after 'multiple'.\n"); // DEBUG
 				printf(ERROR_RULES);
-				valid = 0;
-				return;
+				return 0;
 			}
 		} else {
-			valid = 0;
 			printf(ERROR_RULES);
-			break;
+			return 0;
 		}
 	}
+	return 1;
 }
 
-void get_board(char token[]) {
+int get_board(char* token) {
 	if (!next_token(token, LENGTH)) {
 		printf("Invalid input: Board error. EOF reached.\n");
-		valid = 0;
-		return;
+		return 0;
 	}
 	int row = 0;
 	int col = 0;
@@ -189,14 +172,14 @@ void get_board(char token[]) {
 		}
 		if (!next_token(token, LENGTH)) {
 			printf("Invalid input: Board error. EOF reached.\n");
-			valid = 0;
-			return;
+			return 0;
 		}
 	}
 //	print_board(); // DEBUGG
+	return 1;
 }
 
-int get_moves(char token[]) {
+int get_moves(char* token) {
 	while (next_token(token, 7)) {
 		if (!move_valid(token)) {
 			printf("Invalid input: 'TOKENS' section.\n\tExpected a move but found '%s'.\n", token);
@@ -204,10 +187,6 @@ int get_moves(char token[]) {
 		}
 	}
 	return 1;
-}
-
-int is_valid() {
-	return valid;
 }
 
 int is_black_turn() {

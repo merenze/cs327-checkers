@@ -10,8 +10,7 @@
 #include "gameutil.h"
 
 int main() {
-	load_config();
-	if (!is_valid()) {
+	if (!load_config()) {
 		return 1;
 	}
 	printf(
@@ -22,4 +21,5 @@ int main() {
 			num_black_kings(), 
 			num_black_pawns()
 			);
+	return 0;
 }

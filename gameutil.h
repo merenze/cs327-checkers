@@ -8,9 +8,7 @@
 
 char board[8][8];		// Stores current layout of the board.
 
-void load_config();		// Loads rules, turn, board, and moves from standard input.
-
-int is_valid();			// True if standard input is valid.
+int load_config();		// Loads rules, turn, board, and moves from standard input.
 
 int is_black_turn();		// True if currently black's turn.
 

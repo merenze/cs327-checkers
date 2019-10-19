@@ -16,7 +16,7 @@ int valid = 1;		// True if standard input is valid.
 int black_turn;		// True if currently black's turn, false if red's.
 int multiple_jumps;	// True if multiple jumps are allowed.
 int no_capture;		// True if capture rule not enforced.
-
+int flipped;		// True if board is flipped configuration
 // Some error messages.
 const char ERROR_RULES[] = "Input error: Invalid token in rules. Allowed tokens are 'capture', 'no capture', and 'multiple jumps'.\n";
 
@@ -232,7 +232,7 @@ int count_occurrences(char ch) {
 
 // Ensure the board is valid
 int board_valid() {
-	int flipped = board[0][0] != '\"';
+	flipped = board[0][0] != '\"';
 	int redFlag = flipped;
 	for (int i = 0; i < 8; i++) {
 		redFlag = !redFlag;
@@ -258,7 +258,10 @@ int board_valid() {
 	return 1;
 }
 
-// Ensure a move is valid
+/**
+ * This method checks whether the input token for a move is of a valid format.
+ * It does NOT check if the move is legal.
+ */
 int move_valid(char move[]) {
 	// String is wrong length
 	if (!multiple_jumps && strlen(move) != 6) {
@@ -278,7 +281,7 @@ int move_valid(char move[]) {
 		else if ((i - 1) % 4 == 0) {
 			if (!('1' <= move[i] && move[i] <= '8')) {
 				return 0;
-			}
+			 }
 		}
 		// Check for '-' (arrow)
 		else if ((i - 2) % 4 == 0) {
@@ -296,10 +299,115 @@ int move_valid(char move[]) {
 	return 1;
 }
 
-// Perform a move
+/**
+ * Execute a move.
+ *
+ * Returns:	1 on success (move is legal). 0 on failure (move is illegal).
+ */
 int do_move(char* move) {
-	// Check for piece at current spot
-	
+	for (int i = 0; i + 5 < strlen(move); i += 4) {
+		// Convert rank and file into board row and column
+		int row_c = 8 - move[i + 1];	// Current row
+		int row_t = 8 - move[i + 5];	// Target row
+		int col_c = move[i] - 'a';		// Current column
+		int col_t = move[i + 4] - 'a';	// Target column
+		// Check for a piece at the current position
+		if (!(board[row_c][col_c] == 'r' || board[row_c][col_c] == 'R' || board[row_c][col_c] == 'b' || board[row_c][col_c] == 'B')) {
+			return 0;
+		}
+		// Red pawns cannot move down. Black pawns cannot move up
+		if (row_t > row_c && board[row_c][col_c] == 'r' || row_t < row_c && board[row_c][col_c] == 'b') {
+			return 0;
+		}	
+		// Check for a free space at the target position
+		if (!(board[row_t][col_t] == '.' || board[row_t][col_t] == '"')) {
+			return 0;
+		}
+		// When attempting to jump down
+		if (row_t == row_c + 2) {
+			// When attempting to move right
+			if (col_t == col_c + 2) {
+				char victim = board[row_c + 1][col_c + 1];
+				// If piece is red
+				if (board[row_c][col_c] == 'R') {
+					if (victim != 'b' && victim != 'B') {
+						return 0;
+					}
+				}
+				// If piece is black
+				else {
+					if (victim != 'r' && victim != 'R') {
+						return 0;
+					}
+				}
+
+			}
+			// When attempting to move left
+			else if (col_t == col_c - 2) {
+				char victim = board[row_c + 1][col_c - 1];
+				// If piece is red
+				if (board[row_c][col_c] == 'R') {
+					if (victim != 'b' && victim != 'B') {
+						return 0;
+					}
+				}
+				// If piece is black
+				else {
+					if (victim != 'r' && victim != 'R') {
+						return 0;
+					}
+				}
+			} else {
+				return 0;
+			}
+		}
+		// When attempting to jump up
+		else if (row_t == row_c - 2) {
+			// When attempting to move right
+			if (col_t == col_c + 2) {
+				char victim = board[row_c - 1][col_c + 1];
+				// If piece is black
+				if (board[row_c][col_c] == 'B') {
+					if (victim != 'r' && victim != 'R') {
+						return 0;
+					}
+				}
+				// If piece is red
+				else {
+					if (victim != 'b' && victim != 'B') {
+						return 0;
+					}
+				}
+			}
+			// When attempting to move left
+			else if (col_t == col_c - 2) {
+				char victim = board[row_c - 1][col_c - 1];
+				// If piece is black
+				if (board[row_c][col_c] == 'B') {
+					if (victim != 'r' && victim != 'R') {
+						return 0;
+					}
+				}
+				// If piece is red
+				else {
+					if (victim != 'b' && victim != 'B') {
+						return 0;
+					}
+				}
+			} else {
+				return 0;
+			}
+		}
+		// Not a jump. Check for diagonal relationship
+		else if (!(	row_t == row_c + 1 && (col_t == col_c + 1 || col_t == col_c - 1) || 
+				row_t == row_c - 1 && (col_t == col_c + 1 || col_t == col_c - 1) )) {
+			return 0;
+		}
+		// Execute the move
+		board[row_t][col_t] = board[row_c][col_c];
+		board[row_c][col_c] = flipped ? '.' : '"';
+		return 1;
+	}
 }
 
 // For debugging

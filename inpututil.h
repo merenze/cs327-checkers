@@ -11,11 +11,12 @@
  * Gets the next token from standard input.
  * Tokens are delimited by space, newline, tab, and carriage return.
  * Skips commented lines.
- *
+ * 
+ * FILE*	Input stream.
  * char[]	String into which token should be loaded.
  * int		Maximum length of token. Usually equal to size of the passed string.
  */
-int next_token(char[], int);
+int next_token(FILE*, char[], int);
 
 /*
  * Returns 1 when two strings are equal, else returns 0.

@@ -4,16 +4,16 @@ const char whitespace[] = " :\n\t\r";
 
 int is_whitespace(char);
 
-void skip_line(char*);
+void skip_line(FILE*, char*);
 
-int next_token(char token[], int max) {
+int next_token(FILE* infile, char token[], int max) {
 	char ch;	// Where we'll be storing result of getchar().
 
 	// Skip leading whitespace and comments.
-	while (is_whitespace(ch = getchar()) || ch == '#') {
+	while (is_whitespace(ch = getc(infile)) || ch == '#') {
 		// Skip commented lines.
 		if (ch == '#') {
-			skip_line(&ch);
+			skip_line(infile, &ch);
 		}
 	}
 	// Check for EOF.
@@ -26,13 +26,13 @@ int next_token(char token[], int max) {
 	int i = 1;
 
 	// Main loop for loading characters into token. Max - 1 guarentees room for terminating character.
-	while (i < max - 1 && !is_whitespace(ch = getchar())) {
+	while (i < max - 1 && !is_whitespace(ch = getc(infile))) {
 		if (ch == EOF) {
 			return 0;
 		}
 		// Since comments continue until \n or EOF, they always signal the end of a token.
 		if (ch == '#') {
-			skip_line(&ch);
+			skip_line(infile, &ch);
 			i++;
 			break;
 		}
@@ -52,6 +52,6 @@ int is_whitespace(char ch) {
 	return 0;
 }
  
-void skip_line(char* ch_ptr) {
-	while (((*ch_ptr) = getchar()) != '\n');
+void skip_line(FILE* infile, char* ch_ptr) {
+	while (((*ch_ptr) = getc(infile)) != '\n');
 }

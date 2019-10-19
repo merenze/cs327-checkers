@@ -10,7 +10,7 @@
 #include "gameutil.h"
 
 int main() {
-	if (!load_config()) {
+	if (!load_config(stdin)) {
 		return 1;
 	}
 	printf(

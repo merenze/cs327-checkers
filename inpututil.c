@@ -6,7 +6,7 @@ int is_whitespace(char);
 
 void skip_line(FILE*, char*);
 
-int next_token(FILE* infile, char token[], int max) {
+int next_token(FILE* infile, char* token, int max) {
 	char ch;	// Where we'll be storing result of getchar().
 
 	// Skip leading whitespace and comments.

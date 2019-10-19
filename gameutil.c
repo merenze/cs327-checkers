@@ -261,19 +261,44 @@ int board_valid() {
 // Ensure a move is valid
 int move_valid(char move[]) {
 	// String is wrong length
-	if (strlen(move) % 6 != 0) {
-		return false;
+	if (!multiple_jumps && strlen(move) != 6) {
+		return 0;
+	}
+	if ((strlen(move) - 6) % 4 != 0) {
+		return 0;
 	}
 	for (int i = 0; move[i]; i++) {
-		// Positions (0, 1, 4, 5) + n
-//TODO		if (i % 6 == 0 || i % 6 == 1 || i % 6 == ) 
+		// Check for letters in appropriate positions
+		if (i % 4 == 0) {
+			if (!('a' <= move[i] && move[i] <= 'z')) {
+				return 0;
+			}
+		}
+		// Check for numbers in appropriate positions
+		else if ((i - 1) % 4 == 0) {
+			if (!('1' <= move[i] && move[i] <= '8')) {
+				return 0;
+			}
+		}
+		// Check for '-' (arrow)
+		else if ((i - 2) % 4 == 0) {
+			if (move[i] != '-') {
+				return 0;
+			}
+		}
+		// Check for '>' (arrow)
+		else if ((i - 3) % 4 == 0) {
+			if (move[i] != '>') {
+				return 0;
+			}
+		}
 	}
+	return 1;
 }
 
 // Perform a move
 int do_move(char* move) {
 	// Check for piece at current spot
-	if (board[move[0] - 96][board[move[1] - 1
 	
 }
 

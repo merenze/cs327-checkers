@@ -31,5 +31,5 @@ BOARD:
 
 MOVES:
 # red 		# black
-e3->d4		b6->c5
+e3->d4->e5		b6->c5
 d4->b6

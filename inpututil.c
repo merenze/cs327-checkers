@@ -1,16 +1,17 @@
 #include <stdio.h>
 
-const char whitespace[] = " :\n\t\r";
+const char whitespace[] = " :\n\t\r";	// Array of token delimiters.
+int line;				// The line number we're on.
 
-int is_whitespace(char);
-
-void skip_line(FILE*, char*);
+int is_whitespace(char);	// Checks if a char is whitespace. Used to delimit tokens.
+char _getc(FILE*);		// Wraps getc, and increments line if result = '\n'
+void skip_line(FILE*, char*);	// Used to ignore commented lines
 
 int next_token(FILE* infile, char* token, int max) {
 	char ch;	// Where we'll be storing result of getchar().
-
+	line = 1;	// Keeping track of the line number
 	// Skip leading whitespace and comments.
-	while (is_whitespace(ch = getc(infile)) || ch == '#') {
+	while (is_whitespace(ch = _getc(infile)) || ch == '#') {
 		// Skip commented lines.
 		if (ch == '#') {
 			skip_line(infile, &ch);
@@ -26,7 +27,7 @@ int next_token(FILE* infile, char* token, int max) {
 	int i = 1;
 
 	// Main loop for loading characters into token. Max - 1 guarentees room for terminating character.
-	while (i < max - 1 && !is_whitespace(ch = getc(infile))) {
+	while (i < max - 1 && !is_whitespace(ch = _getc(infile))) {
 		if (ch == EOF) {
 			return 0;
 		}
@@ -53,5 +54,17 @@ int is_whitespace(char ch) {
 }
  
 void skip_line(FILE* infile, char* ch_ptr) {
-	while (((*ch_ptr) = getc(infile)) != '\n');
+	while (((*ch_ptr) = _getc(infile)) != '\n');
+}
+
+int get_line() {
+	return line;
+}
+
+char _getc(FILE* infile) {
+	char result = getc(infile);
+	if (result == '\n') {
+		line++;
+	}
+	return result;
 }

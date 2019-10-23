@@ -22,7 +22,7 @@ int num_moves;		// Number of moves in movelist
 Node* move_list;	// List of moves in order
 FILE* logfile;		
 // Some error messages.
-const char ERROR_RULES[] = "Input error: Invalid token in rules. Allowed tokens are 'capture', 'no capture', and 'multiple jumps'.\n";
+const char ERROR_RULES[] = "Input error (line %d): Invalid token in rules. Allowed tokens are 'capture', 'no capture', and 'multiple jumps'.\n";
 
 // Some helper methods.
 void add_move(char*);
@@ -45,16 +45,16 @@ int load_config(FILE* infile) {
 	multiple_jumps = 0;
 
 	if (!has_input) {
-		printf("Invalid input: no input found.");
+		fprintf(stderr, "Invalid input (line %d): No input found.", get_line());
 		return 0;
 	}
 	// Load rules
 	if (strcmp(token, "RULES")) {
-		printf("Invalid input: Expected 'RULES' but found '%s'.\n", token);
+		fprintf(stderr, "Invalid input (line %d): Expected 'RULES' but found '%s'.\n", get_line(), token);
 		return 0;
 	}
 	if (!next_token(infile, token, LENGTH)) {
-		printf("Invalid input: Expected 'TURN' but found EOF.\n");
+		fprintf(stderr, "Invalid input (line %d): Expected 'TURN' but found EOF.\n", get_line());
 		return 0;
 	}
 	if (!get_rules(infile, token)) {
@@ -62,28 +62,28 @@ int load_config(FILE* infile) {
 	}
 	// Load turn
 	if (strcmp(token, "TURN")) {
-		printf("Invalid input: Expected 'TURN' but found '%s'.\n", token);
+		fprintf(stderr, "Invalid input (line %d): Expected 'TURN' but found '%s'.\n", get_line(), token);
 		return 0;
 	}
 	if (!next_token(infile, token, LENGTH)) {
-		printf("Invalid input: Turn error.\n\tExpected 'red' or 'black' but found EOF.");
+		fprintf(stderr, "Invalid input (line %d): Expected 'red' or 'black' but found EOF.\n", get_line());
 	}
 	if (!strcmp(token, "red")) {
 		black_turn = 0;
 	} else if (!strcmp(token, "black")) {
 		black_turn = 1;
 	} else {
-		printf("Invalid input: 'TURN' section.\n\tExpected 'red' or 'black' but found '%s'.\n", token);
+		fprintf(stderr, "Invalid input (line %d): Expected 'red' or 'black' but found '%s'.\n", get_line(), token);
 		return 0;
 	}
 
 	// Load board
 	if (!next_token(infile, token, LENGTH)) {
-		printf("Invalid input: Expected 'BOARD' but found EOF.\n");
+		fprintf(stderr, "Invalid input (line %d): Expected 'BOARD' but found EOF.\n", get_line());
 		return 0;
 	}
 	if (strcmp(token, "BOARD")) {
-		printf("Invalid input: Expected 'BOARD' but found '%s'.\n", token);
+		fprintf(stderr, "Invalid input (line %d): Expected 'BOARD' but found '%s'.\n", get_line(), token);
 		return 0;
 	}
 	if (!get_board(infile, token)) {
@@ -98,7 +98,7 @@ int load_config(FILE* infile) {
 		next_token(infile, token, LENGTH);
 	}
 	if (strcmp(token, "MOVES")) {
-		printf("Invalid input: expected 'MOVES' but found diddly.\n");
+		fprintf(stderr, "Invalid input (line %d): expected 'MOVES' but found '%s'\n", get_line(), token);
 		return 0;
 	}
 	if (!get_moves(infile, token)) {
@@ -112,20 +112,20 @@ int get_rules(FILE* infile, char* token) {
 	while (strcmp(token, "TURN")) {
 		// Check for capture.
 		if (!next_token(infile, token, LENGTH)) {
-			printf("Invalid input: Rules error.\n\tExpected rule but found EOF.\n");
+			fprintf(stderr, "Invalid input (line %d): Expected rule but found EOF.\n", get_line());
 			return 0;
 		}
 		if (!strcmp(token, "no")) {
 //			printf("Token 'no' found. Checking for 'capture'.\n"); // DEBUG
 			if (!next_token(infile, token, LENGTH)) {
-				printf("Invalid input: Rules error.\n\tExpected 'capture' but found EOF.\n");
+				fprintf(stderr, "Invalid input (line %d): Expected 'capture' but found EOF.\n", get_line());
 				return 0;
 			}
 			if (!strcmp(token, "capture")) {
 //				printf("Token 'capture' found. Setting no_capture to 1.\n"); // DEBUG
 				no_capture = 1;
 			} else {
-				printf(ERROR_RULES);
+				fprintf(stderr, ERROR_RULES, get_line());
 				return 0;
 			}
 		} else if (!strcmp(token, "capture")) {
@@ -134,23 +134,23 @@ int get_rules(FILE* infile, char* token) {
 		} else if (!strcmp(token, "multiple")) {
 //			printf("Token 'multiple' found. Checking for 'jumps'.\n"); // DEBUG
 			if (!next_token(infile, token, LENGTH)) {
-				printf("Invalid input: Rules error.\n\tExpected 'capture' but found EOF.\n");
+				fprintf(stderr, "Invalid input (line %d): Expected 'capture' but found EOF.\n", get_line());
 				return 0;
 			}
 			if (!strcmp(token, "jumps")) {
 //				printf("Token 'jumps' found. Setting multiple_jumps to 1.\n"); // DEBUG
 				multiple_jumps = 1;
 				if (!next_token(infile, token, LENGTH)) {
-					printf("Invalid input: Rules error.\n\tExpected rule but found EOF.\n");
+					fprintf(stderr, "Invalid input (line %d): Expected rule but found EOF.\n", get_line());
 					return 0;
 				}
 			} else {
 //			printf("Token 'jumps' not found after 'multiple'.\n"); // DEBUG
-				printf(ERROR_RULES);
+				fprintf(stderr, ERROR_RULES, get_line());
 				return 0;
 			}
 		} else {
-			printf(ERROR_RULES);
+			fprintf(stderr, ERROR_RULES, get_line());
 			return 0;
 		}
 	}
@@ -159,7 +159,7 @@ int get_rules(FILE* infile, char* token) {
 
 int get_board(FILE* infile, char* token) {
 	if (!next_token(infile, token, LENGTH)) {
-		printf("Invalid input: Board error. EOF reached.\n");
+		fprintf(stderr, "Invalid input (line %d): EOF reached.\n", get_line());
 		return 0;
 	}
 	int row = 0;
@@ -176,7 +176,7 @@ int get_board(FILE* infile, char* token) {
 			}
 		}
 		if (!next_token(infile, token, LENGTH)) {
-			printf("Invalid input: Board error. EOF reached.\n");
+			fprintf(stderr, "Invalid input (line %d): EOF reached.\n", get_line());
 			return 0;
 		}
 	}
@@ -187,7 +187,7 @@ int get_board(FILE* infile, char* token) {
 int get_moves(FILE* infile, char* token) {
 	for (num_moves = 0; next_token(infile, token, LENGTH); num_moves++) {
 		if (!move_valid(token)) {
-			printf("Invalid input: 'TOKENS' section.\n\tExpected a move but found '%s'.\n", token);
+			fprintf(stderr, "Invalid input (line %d): Expected move but found '%s'.\n", get_line(), token);
 			return 0;
 		}
 		add_move(token);
@@ -245,13 +245,15 @@ int board_valid() {
 		for (int j = 0; j < 8; j++) {
 			// Make sure the space has been initialized.
 			if (board[i][j] == 0) {
-				printf("Invalid input: Invalid board.\n\tIn space %c%d: Found uninitialized space. Are there at least 64 squares defined?\n", j + 97, 8 - i);
+				fprintf(stderr, "Invalid input (line %d): Invalid board. Space %c%d uninitialized\n", 
+						get_line(), j + 97, 8 - i);
 				return 0;
 			}
 			// Make sure red spaces are red, and black spaces are black.
 			// If board is not flipped, space is supposed to be red, and space is not red
 			if (!flipped && redFlag && board[i][j] != '\"') {
-				printf("Invalid input: Invalid board.\n\tIn space %c%d: Expected %s space but found %s space.\n", j + 97, 8 - i, (redFlag ? "red" : "black"), (redFlag ? "black" : "red"));
+				fprintf(stderr, "Invalid input (line %d): Invalid board.\n\tIn space %c%d: Expected %s space but found %s space.\n", 
+						get_line(), j + 97, 8 - i, (redFlag ? "red" : "black"), (redFlag ? "black" : "red"));
 				return 0;
 			}
 			// If board IS flipped, space is supposed to be red, and space is not red.

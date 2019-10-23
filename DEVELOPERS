@@ -1,19 +1,18 @@
-DEVELOPERS file for emester project, Part 1.
+============================================
+Checkers Project
 Matthew Renze
 ============================================
 FILES
 
-info.c		Contains main() function.
+info.c		Determines whether a given board configuration is valid.
+
+change.c	Takes a configuration as input and performs the moves until an illegal one is found.	
 
 gameutil.c	Contains most of the logic for parsing standard input and initializing the game settings.
 
-gameutil.h	Declares game utility functions for use outside of gameutil.c.
+gameutil.h	Declares game utility functions for gameutil.c.
 
 inpututil.c	Contains utility functions for reading tokens from standard input.
 
-inpututil.h	Declares input utility functions for use outside of inpututil.c.
-
-stringutil.c	Contains some functions for getting string information.
-
-stringutil.h	Declares string utility functions defined in stringutil.c.
+inpututil.h	Declares input utility functions for inpututil.c.
 

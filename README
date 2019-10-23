@@ -1,4 +1,5 @@
-README for semester project, part 1.
+====================================
+Checkers Project
 Matthew Renze
 ====================================
 Part one contains most of the logic for initializing the game from the specifications given via standard input.
@@ -6,3 +7,18 @@ Part one contains most of the logic for initializing the game from the specifica
 Standard input is first accessed by inpututil.c, and is broken into tokens divided by whitespace and colons. Tokens are given to gameutil.c, which parses them for game rules, turn, and board configuration.
 
 Main function accesses this information and prints the output.
+====================================
+Part two introduces change.c. When given a valid configuration, it initializes the gameboard, performs the given moves until an illegal move is found, stores the final board configuration in a human readable format, and stores the unprocessed moves.
+
+Run with:
+change.c [options] [inputfile]
+
+Options:
+-e efilename
+	File where unprocessed moves are stored
+-h hfilename
+	File where final board configuration is stored.
+-m max
+	Maximum number of moves that should be processed.
+
+

@@ -26,3 +26,9 @@ int next_token(FILE*, char*, int);
  * char*	String to test.
  */
 int equals(char*, char*);
+
+/*
+ * Gets the current line number.
+ * Useful for error messages.
+ */
+int get_line();

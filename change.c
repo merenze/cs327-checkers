@@ -55,7 +55,9 @@ int main(int argc, char** argv) {
 			break;
 		}
 	}
-	printf("All moves legal\n");
+	if (!cursor) {
+		printf("All moves legal\n");
+	}
 	// Output unprocessed moves
 	create_exchange(cursor);
 	// Output human readable

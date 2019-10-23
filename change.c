@@ -82,7 +82,7 @@ void create_human_readable() {
 		for(int col = 0; col < 8; col++) {
 			fprintf(hfile, " %c |", board[row][col]);
 		}
-		fprintf(hfile, " %d\n%s\n", 8 - row, border);
+		fprintf(hfile, " %d\n%s", 8 - row, border);
 	}
 	fprintf(hfile, "   a   b   c   d   e   f   g   h   \n");
 }

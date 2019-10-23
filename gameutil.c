@@ -11,7 +11,7 @@
 #include "inpututil.h"
 
 #define LENGTH 100	// Maximum allowed length of a token.
-
+#define LOG 0		// True if creating logfile for debug purposes
 // Some global variables.
 int valid = 1;		// True if standard input is valid.
 int black_turn;		// True if currently black's turn, false if red's.
@@ -20,6 +20,7 @@ int no_capture;		// True if capture rule not enforced.
 int flipped;		// True if board is flipped configuration
 int num_moves;		// Number of moves in movelist
 Node* move_list;	// List of moves in order
+FILE* logfile;		
 // Some error messages.
 const char ERROR_RULES[] = "Input error: Invalid token in rules. Allowed tokens are 'capture', 'no capture', and 'multiple jumps'.\n";
 
@@ -35,6 +36,7 @@ void print_board();
 
 // The main dish.
 int load_config(FILE* infile) {
+	if (LOG) logfile = fopen("log", "w");
 	// Use this to check for EOF
 	int has_input;
 	// Some variables and stuff
@@ -309,33 +311,53 @@ int move_valid(char move[]) {
  * Returns:	1 on success (move is legal). 0 on failure (move is illegal).
  */
 int do_move(char* move) {
+	if (LOG) fprintf(logfile, "\nCall to do_move(%s)\n", move);
 	for (int i = 0; i + 5 < strlen(move); i += 4) {
 		// Convert rank and file into board row and column
-		int row_c = 8 - move[i + 1];	// Current row
-		int row_t = 8 - move[i + 5];	// Target row
+		int row_c = 7 - move[i + 1] + '1';	// Current row
+		int row_t = 7 - move[i + 5] + '1';	// Target row
 		int col_c = move[i] - 'a';		// Current column
-		int col_t = move[i + 4] - 'a';	// Target column
+		int col_t = move[i + 4] - 'a';		// Target column
+		
+		if (LOG) {
+			fprintf(logfile, "\nCurrent row: %c%c [%d][%d]\nTarget row: %c%c [%d][%d]\nInitial board:\n", 
+					move[i], move[i+1], row_c, col_c, move[i+4], move[i+5], row_t, col_t);
+			print_board(logfile);
+		}
 		// Check for a piece at the current position
 		if (!(board[row_c][col_c] == 'r' || board[row_c][col_c] == 'R' || board[row_c][col_c] == 'b' || board[row_c][col_c] == 'B')) {
+			if (LOG) {
+				fprintf(logfile, "Illegal move: No piece at start space]\n");	// DEBUG
+			}
 			return 0;
 		}
 		// Red pawns cannot move down. Black pawns cannot move up
 		if (row_t > row_c && board[row_c][col_c] == 'r' || row_t < row_c && board[row_c][col_c] == 'b') {
+			if (LOG) {
+				fprintf(logfile, "Illegal move: Pawn attempting to move backwards\n");
+			}
 			return 0;
 		}	
 		// Check for a free space at the target position
 		if (!(board[row_t][col_t] == '.' || board[row_t][col_t] == '"')) {
+			if (LOG) {
+				fprintf(logfile, "Illegal move: Pawn attempting to move to occupied space\n");	// DEBUG
+			}
 			return 0;
 		}
 		// When attempting to jump down
 		if (row_t == row_c + 2) {
+			if (LOG) fprintf(logfile, "Move is a jump down\n");
 			// When attempting to move right
 			if (col_t == col_c + 2) {
 				char victim = board[row_c + 1][col_c + 1];
+				if (LOG) {
+					fprintf(logfile, "Attempting to jump space '%c' [%d][%d]\n", victim, row_c + 1, col_c + 1);
+				}
 				// If piece is red
 				if (board[row_c][col_c] == 'R') {
 					if (victim != 'b' && victim != 'B') {
-						return 0;
+						 return 0;
 					}
 				}
 				// If piece is black
@@ -344,11 +366,14 @@ int do_move(char* move) {
 						return 0;
 					}
 				}
-
+				board[row_c + 1][col_c + 1] = flipped ? '"' : '.';
 			}
 			// When attempting to move left
 			else if (col_t == col_c - 2) {
 				char victim = board[row_c + 1][col_c - 1];
+				if (LOG) {
+					fprintf(logfile, "Attempting to jump space '%c' [%d][%d]\n", victim, row_c + 1, col_c - 1);
+				}
 				// If piece is red
 				if (board[row_c][col_c] == 'R') {
 					if (victim != 'b' && victim != 'B') {
@@ -361,15 +386,22 @@ int do_move(char* move) {
 						return 0;
 					}
 				}
+				board[row_c + 1][col_c - 1] = flipped ? '"' : '.';
 			} else {
 				return 0;
 			}
 		}
 		// When attempting to jump up
 		else if (row_t == row_c - 2) {
+			if (LOG) {
+				fprintf(logfile, "Move is a jump up\n");
+			}
 			// When attempting to move right
 			if (col_t == col_c + 2) {
 				char victim = board[row_c - 1][col_c + 1];
+				if (LOG) {
+					fprintf(logfile, "Attempting to jump space '%c' [%d][%d]\n", victim, row_c - 1, col_c + 1);
+				}
 				// If piece is black
 				if (board[row_c][col_c] == 'B') {
 					if (victim != 'r' && victim != 'R') {
@@ -382,10 +414,14 @@ int do_move(char* move) {
 						return 0;
 					}
 				}
+				board[row_c - 1][col_c + 1] = flipped ? '"' : '.';
 			}
 			// When attempting to move left
 			else if (col_t == col_c - 2) {
 				char victim = board[row_c - 1][col_c - 1];
+				if (LOG) {
+					fprintf(logfile, "Attempting to jump space '%c' [%d][%d]\n", victim, row_c - 1, col_c - 1);
+				}
 				// If piece is black
 				if (board[row_c][col_c] == 'B') {
 					if (victim != 'r' && victim != 'R') {
@@ -398,6 +434,7 @@ int do_move(char* move) {
 						return 0;
 					}
 				}
+				board[row_c - 1][col_c - 1] = flipped ? '"' : '.';
 			} else {
 				return 0;
 			}
@@ -409,7 +446,11 @@ int do_move(char* move) {
 		}
 		// Execute the move
 		board[row_t][col_t] = board[row_c][col_c];
-		board[row_c][col_c] = flipped ? '.' : '"';
+		board[row_c][col_c] = flipped ? '"' : '.';
+		if (LOG) {
+			fprintf(logfile, "Move successful.\nNew board:\n");
+			print_board(logfile);
+		}
 		return 1;
 	}
 }
@@ -438,11 +479,13 @@ int get_num_moves() {
 	return num_moves;
 }
 // For debugging
-void print_board() {
+void print_board(FILE* file) {
+	fprintf(file, "  a b c d e f g h \n");
 	for (int row = 0; row < 8; row++) {
+		fprintf(file, "%d ", 8 - row);
 		for (int col = 0; col < 8; col++) {
-			printf("%c ", board[row][col]);
+			fprintf(file, "%c ", board[row][col]);
 		}
-		printf("\n");
+		fprintf(file, "\n");
 	}
 }

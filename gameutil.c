@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "gameutil.h"
 #include "inpututil.h"
 
@@ -17,10 +18,13 @@ int black_turn;		// True if currently black's turn, false if red's.
 int multiple_jumps;	// True if multiple jumps are allowed.
 int no_capture;		// True if capture rule not enforced.
 int flipped;		// True if board is flipped configuration
+int num_moves;		// Number of moves in movelist
+Node* move_list;	// List of moves in order
 // Some error messages.
 const char ERROR_RULES[] = "Input error: Invalid token in rules. Allowed tokens are 'capture', 'no capture', and 'multiple jumps'.\n";
 
 // Some helper methods.
+void add_move(char*);
 int count_occurrences(char);
 int board_valid();
 int get_rules(FILE*, char*);
@@ -54,7 +58,6 @@ int load_config(FILE* infile) {
 	if (!get_rules(infile, token)) {
 		return 0;
 	}
-
 	// Load turn
 	if (strcmp(token, "TURN")) {
 		printf("Invalid input: Expected 'TURN' but found '%s'.\n", token);
@@ -180,11 +183,12 @@ int get_board(FILE* infile, char* token) {
 }
 
 int get_moves(FILE* infile, char* token) {
-	while (next_token(infile, token, LENGTH)) {
+	for (num_moves = 0; next_token(infile, token, LENGTH); num_moves++) {
 		if (!move_valid(token)) {
 			printf("Invalid input: 'TOKENS' section.\n\tExpected a move but found '%s'.\n", token);
 			return 0;
 		}
+		add_move(token);
 	}
 	return 1;
 }
@@ -410,6 +414,29 @@ int do_move(char* move) {
 	}
 }
 
+void add_move(char* move) {
+	if (!move_list) {
+		move_list = (Node*) malloc(sizeof(Node));
+		strcpy(move_list->move, move);
+		move_list->next = NULL;
+		return;
+	}
+	Node* cursor;
+	for (cursor = move_list; cursor->next; cursor = cursor->next);
+	cursor->next = (Node*) malloc(sizeof(Node));
+	strcpy(cursor->next->move, move);
+	cursor->next->next = NULL;
+}
+
+// Returns the head of the movelist
+Node* get_move_list() {
+	return move_list;
+}
+
+// Returns the number of moves from config
+int get_num_moves() {
+	return num_moves;
+}
 // For debugging
 void print_board() {
 	for (int row = 0; row < 8; row++) {

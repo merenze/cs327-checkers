@@ -1,0 +1,11 @@
+# Executables
+change
+exchange
+
+# Output files 
+*.txt
+log
+
+# Test files
+part2/
+part1/

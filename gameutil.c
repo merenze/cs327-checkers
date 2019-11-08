@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include "gameutil.h"
 #include "inpututil.h"
+#include "movelist.h"
 
 #define LENGTH 100	// Maximum allowed length of a token.
 
@@ -19,7 +20,7 @@ int multiple_jumps;	// True if multiple jumps are allowed.
 int no_capture;		// True if capture rule not enforced.
 int flipped;		// True if board is flipped configuration
 int num_moves;		// Number of moves in movelist
-Node* move_list;	// List of moves in order
+Node* movelist;	// List of moves in order
 FILE* logfile;		// Useful for debugging
 
 const char ERROR_RULES[] = "Input error (line %d): Invalid token ('%s') in rules.\n";
@@ -203,7 +204,7 @@ int get_moves(FILE* infile, char* token) {
 			fprintf(stderr, "Invalid input (line %d): Expected move but found '%s'.\n", get_line(), token);
 			return 0;
 		}
-		add_move(token);
+		movelist_add(movelist, token);
 	}
 	return 1;
 }
@@ -450,25 +451,9 @@ int do_move(char* move) {
 	}
 }
 
-void add_move(char* move) {
-	if (!move_list) {
-		move_list = (Node*) malloc(sizeof(Node));
-		strcpy(move_list->move, move);
-		move_list->next = NULL;
-		return;
-	}
-	Node* cursor;
-	for (cursor = move_list; cursor->next; cursor = cursor->next);
-	cursor->next = (Node*) malloc(sizeof(Node));
-	strcpy(cursor->next->move, move);
-	cursor->next->next = NULL;
+Node* get_movelist() {
+	return movelist;
 }
-
-// Returns the head of the movelist
-Node* get_move_list() {
-	return move_list;
-}
-
 // Returns the number of moves from config
 int get_num_moves() {
 	return num_moves;

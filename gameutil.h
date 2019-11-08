@@ -5,13 +5,9 @@
  *
  * Matthew Renze
  */
+#include "movelist.h"
 
 char board[8][8];		// Stores current layout of the board.
-
-typedef struct node {
-	char move[100];
-	struct node* next;
-} Node;
 
 int load_config(FILE*);		// Loads rules, turn, board, and moves from standard input.
 
@@ -33,4 +29,4 @@ int get_num_moves();		// Gets the number of moves in config file
 
 int do_move(char*);		// Attempt to execute a move
 
-Node* get_move_list();		// Gets the list of moves
+Node* get_movelist();		// Gets the list of moves

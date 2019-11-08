@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 	}
 	// Do moves
 	printf("Input file has %d moves\nProcessing %d moves\n", get_num_moves(), max < get_num_moves() ? max : get_num_moves());
-	Node* cursor = get_move_list();
+	Node* cursor = get_movelist();
 	for (int j = 1; cursor && j++ <= max; cursor = cursor->next) {
 		if (!do_move(cursor->move)) {
 			printf("Move %d is illegal: %s\n", j, cursor->move);	

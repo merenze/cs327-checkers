@@ -6,6 +6,12 @@ change
 *.txt
 log
 
-# Test files
+# Test input
 part2/
 part1/
+part3/
+
+# Temp programs
+helloworld
+helloworld.c
+loghello

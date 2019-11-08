@@ -463,57 +463,38 @@ Node* get_possible_moves(char** G, int do_black) {
 	fprintf(logfile, "get_possible_moves called for %s\nConfiguration:\n", do_black ? "black" : "red");
 	print_board(logfile, G);
 	Node* result = NULL;
-	char* movestring = "%c%d->%c%d";
+	
 	for (int row = 0; row < 8; row++) {
 		for (int col = 0; col < 8; col++) {
-			fprintf(logfile, "Checking space [%d][%d] (%c%c)... ", row, col, ctoc(col), rtoc(row));
-			// If checking for black's turn
-			if (do_black) {
-				// Skip if no black piece in position
-				if (!is_black(G, row, col)) {
-					fprintf(logfile, "No black piece found.\n");
+			fprintf(logfile, "Checking space %c%c... ", ctoc(row), rtoc(col));
+			if (do_black && !is_black(board, row, col) || !do_black && !is_red(board, row, col)) {
+				fprintf(logfile, "No %s piece; continue.\n", do_black ? "black" : "red");
+				continue;
+			}
+			for (int j = col - 2; j <= col + 2; j++) {
+				// Bounds check on col
+				if (!(0 <= j && j < 8))
 					continue;
-				}
-				fprintf(logfile, "Black piece found.\n");
-				// Check for move 2 left and 2 down
-				fprintf(logfile, "Checking for move to %c%c... ", ctoc(col - 2), rtoc(row + 2));
-				if (row + 2 < 8 && col - 2 >= 0 && is_empty(G, row + 2, col - 2) && is_red(G, row + 1, col - 1)) {
-					char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 2), rtoc(row + 2), 0 };
-					fprintf(logfile, "Possible. Adding %s\n", move);
-					result = movelist_add(result, move);
-				} else {
-					fprintf(logfile, "Not possible.\n");
-				}
-				// Check for move 2 left and 2 up
-				fprintf(logfile, "Checking for move to %c%c... ", ctoc(col - 2), rtoc(row - 2));
-				if (G[row][col] == 'B' && row - 2 >= 0 && col - 2 >= 0 && is_empty(G, row - 2, col - 2) && is_red(G, row - 1, col - 1)) {
-					char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 2), rtoc(row - 2), 0};
-					fprintf(logfile, "Possible. Adding %s\n", move);
-					result = movelist_add(result, move);	
-				} else {
-					fprintf(logfile, "Not possible.\n");
-				}
-				// Check for move 1 left and 1 down
-				fprintf(logfile, "Checking for move to %c%c... ", ctoc(col - 1), rtoc(row + 1));
-				if (row + 1 < 8 && col - 1 >= 0 && is_empty(G, row + 1, col - 1)) {
-					char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 1), rtoc(row + 1), 0 }
-					fprintf(logfile, "Possible. Adding %s\n", move);
-				} else {
-					fprintf(logfile, "Not possible.\n");
-				}
-				// Check for move 1 left and 1 up
-				fprintf(logfile, "Checking for move to %c%c... ", ctoc(col - 1), ctoc(row - 1));
-				if (G[row][col] == 'B' && row - 1 >= 0 && col - 1 >= 0 && is_empty(G, row - 1, col - 1)) {
-					char move[] = { ctoc(col), rtoc(row, '-', '>', ctoc(col - 1), ctoc(row - 1) };
+				for (int i = row + 2; i >= row - 2; row--) {
+					// Bounds check on row
+					if (!(0 <= i && i < 8))
+						continue;
+					// Offset check
+					if (row - i != col - j)
+						continue;
+					fprintf(logfile, "Checking for move to %c%c... ", ctoc(j), ctoc(i));
+					// Getting black moves
+					if (do_black) {
+						if (is_empty(G, i, j)) {
+							
+
+
 				}
 			}
-			// If checking for red's turn
-			else {
-				
-			}
-		}
-	}
+
+	return result;
 }
+
 
 char rtoc(int r) {
 	return (r >= 0 && r < 8) ? ('0' + (8 - r)) : '#';	

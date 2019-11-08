@@ -26,6 +26,10 @@ FILE* logfile;		// Useful for debugging
 const char ERROR_RULES[] = "Input error (line %d): Invalid token ('%s') in rules.\n";
 
 // Some helper methods.
+char rtoc(int);
+int is_empty(char**, int, int);
+int is_red(char**, int, int);
+int is_black(char**, int, int);
 void add_move(char*);
 int count_occurrences(char);
 int board_valid();
@@ -33,7 +37,7 @@ int get_rules(FILE*, char*);
 int get_board(FILE*, char*);
 int move_valid(char*);
 int get_moves(FILE*, char*);
-void print_board();
+void print_board(FILE*, char**);
 
 // The main dish.
 int load_config(FILE* infile) {
@@ -454,17 +458,94 @@ int do_move(char* move) {
 Node* get_movelist() {
 	return movelist;
 }
+
+Node* get_possible_moves(char** G, int do_black) {
+	fprintf(logfile, "get_possible_moves called for %s\nConfiguration:\n", do_black ? "black" : "red");
+	print_board(logfile, G);
+	Node* result = NULL;
+	char* movestring = "%c%d->%c%d";
+	for (int row = 0; row < 8; row++) {
+		for (int col = 0; col < 8; col++) {
+			fprintf(logfile, "Checking space [%d][%d] (%c%c)... ", row, col, ctoc(col), rtoc(row));
+			// If checking for black's turn
+			if (do_black) {
+				// Skip if no black piece in position
+				if (!is_black(G, row, col)) {
+					fprintf(logfile, "No black piece found.\n");
+					continue;
+				}
+				fprintf(logfile, "Black piece found.\n");
+				// Check for move 2 left and 2 down
+				fprintf(logfile, "Checking for move to %c%c... ", ctoc(col - 2), rtoc(row + 2));
+				if (row + 2 < 8 && col - 2 >= 0 && is_empty(G, row + 2, col - 2) && is_red(G, row + 1, col - 1)) {
+					char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 2), rtoc(row + 2), 0 };
+					fprintf(logfile, "Possible. Adding %s\n", move);
+					result = movelist_add(result, move);
+				} else {
+					fprintf(logfile, "Not possible.\n");
+				}
+				// Check for move 2 left and 2 up
+				fprintf(logfile, "Checking for move to %c%c... ", ctoc(col - 2), rtoc(row - 2));
+				if (G[row][col] == 'B' && row - 2 >= 0 && col - 2 >= 0 && is_empty(G, row - 2, col - 2) && is_red(G, row - 1, col - 1)) {
+					char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 2), rtoc(row - 2), 0};
+					fprintf(logfile, "Possible. Adding %s\n", move);
+					result = movelist_add(result, move);	
+				} else {
+					fprintf(logfile, "Not possible.\n");
+				}
+				// Check for move 1 left and 1 down
+				fprintf(logfile, "Checking for move to %c%c... ", ctoc(col - 1), rtoc(row + 1));
+				if (row + 1 < 8 && col - 1 >= 0 && is_empty(G, row + 1, col - 1)) {
+					char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 1), rtoc(row + 1), 0 }
+					fprintf(logfile, "Possible. Adding %s\n", move);
+				} else {
+					fprintf(logfile, "Not possible.\n");
+				}
+				// Check for move 1 left and 1 up
+				fprintf(logfile, "Checking for move to %c%c... ", ctoc(col - 1), ctoc(row - 1));
+				if (G[row][col] == 'B' && row - 1 >= 0 && col - 1 >= 0 && is_empty(G, row - 1, col - 1)) {
+					char move[] = { ctoc(col), rtoc(row, '-', '>', ctoc(col - 1), ctoc(row - 1) };
+				}
+			}
+			// If checking for red's turn
+			else {
+				
+			}
+		}
+	}
+}
+
+char rtoc(int r) {
+	return (r >= 0 && r < 8) ? ('0' + (8 - r)) : '#';	
+}
+
+char ctoc(int c) {
+	return (c >= 0 && c < 8) ? ('a' + c) : '#';
+}
+
+int is_empty(char** G, int row, int col) {
+	return G[row][col] == '.' || G[row][col] == '"';
+}
+
+int is_red(char** G, int row, int col) {
+	return G[row][col] == 'r' || G[row][col] == 'R';
+}
+
+int is_black(char** G, int row, int col) {
+	return G[row][col] == 'b' || G[row][col] == 'B';
+}
+
 // Returns the number of moves from config
 int get_num_moves() {
 	return num_moves;
 }
 // For debugging
-void print_board(FILE* file) {
+void print_board(FILE* file, char** G) {
 	fprintf(file, "  a b c d e f g h \n");
 	for (int row = 0; row < 8; row++) {
 		fprintf(file, "%d ", 8 - row);
-		for (int col = 0; col < 8; col++) {
-			fprintf(file, "%c ", board[row][col]);
+		/for (int col = 0; col < 8; col++) {
+			fprintf(file, "%c ", G[row][col]);
 		}
 		fprintf(file, "\n");
 	}

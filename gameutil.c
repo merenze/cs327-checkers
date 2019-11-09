@@ -27,6 +27,9 @@ const char ERROR_RULES[] = "Input error (line %d): Invalid token ('%s') in rules
 
 // Some helper methods.
 char rtoc(int);
+int move_possible(char**, int, int, int, int);
+char ctoc(int);
+char rtoc(int);
 int is_empty(char**, int, int);
 int is_red(char**, int, int);
 int is_black(char**, int, int);
@@ -198,7 +201,7 @@ int get_board(FILE* infile, char* token) {
 			return 0;
 		}
 	}
-	print_board(logfile); // DEBUGG
+	print_board(logfile, board); // DEBUGG
 	return 1;
 }
 
@@ -330,7 +333,7 @@ int move_valid(char move[]) {
  *
  * Returns:	1 on success (move is legal). 0 on failure (move is illegal).
  */
-int do_move(char* move) {
+int do_move(char** G, char* move) {
 	fprintf(logfile, "\nCall to do_move(%s)\n", move);
 	for (int i = 0; i + 5 < strlen(move); i += 4) {
 		// Convert rank and file into board row and column
@@ -341,19 +344,19 @@ int do_move(char* move) {
 		
 		fprintf(logfile, "\nCurrent row: %c%c [%d][%d]\nTarget row: %c%c [%d][%d]\nInitial board:\n",
 				move[i], move[i+1], row_c, col_c, move[i+4], move[i+5], row_t, col_t);
-		print_board(logfile);
+		print_board(logfile, G);
 		// Check for a piece at the current position
-		if (!(board[row_c][col_c] == 'r' || board[row_c][col_c] == 'R' || board[row_c][col_c] == 'b' || board[row_c][col_c] == 'B')) {
+		if (!(G[row_c][col_c] == 'r' || G[row_c][col_c] == 'R' || G[row_c][col_c] == 'b' || G[row_c][col_c] == 'B')) {
 			fprintf(logfile, "Illegal move: No piece at start space]\n");	// DEBUG
 			return 0;
 		}
 		// Red pawns cannot move down. Black pawns cannot move up
-		if (row_t > row_c && board[row_c][col_c] == 'r' || row_t < row_c && board[row_c][col_c] == 'b') {
+		if (row_t > row_c && G[row_c][col_c] == 'r' || row_t < row_c && G[row_c][col_c] == 'b') {
 			fprintf(logfile, "Illegal move: Pawn attempting to move backwards\n");
 			return 0;
 		}	
 		// Check for a free space at the target position
-		if (!(board[row_t][col_t] == '.' || board[row_t][col_t] == '"')) {
+		if (!(G[row_t][col_t] == '.' || G[row_t][col_t] == '"')) {
 			fprintf(logfile, "Illegal move: Pawn attempting to move to occupied space\n");	// DEBUG
 			return 0;
 		}
@@ -362,10 +365,10 @@ int do_move(char* move) {
 			fprintf(logfile, "Move is a jump down\n");
 			// When attempting to move right
 			if (col_t == col_c + 2) {
-				char victim = board[row_c + 1][col_c + 1];
+				char victim = G[row_c + 1][col_c + 1];
 				fprintf(logfile, "Attempting to jump space '%c' [%d][%d]\n", victim, row_c + 1, col_c + 1);
 				// If piece is red
-				if (board[row_c][col_c] == 'R') {
+				if (G[row_c][col_c] == 'R') {
 					if (victim != 'b' && victim != 'B') {
 						 return 0;
 					}
@@ -376,14 +379,14 @@ int do_move(char* move) {
 						return 0;
 					}
 				}
-				board[row_c + 1][col_c + 1] = flipped ? '"' : '.';
+				G[row_c + 1][col_c + 1] = flipped ? '"' : '.';
 			}
 			// When attempting to move left
 			else if (col_t == col_c - 2) {
 				char victim = board[row_c + 1][col_c - 1];
 				fprintf(logfile, "Attempting to jump space '%c' [%d][%d]\n", victim, row_c + 1, col_c - 1);
 				// If piece is red
-				if (board[row_c][col_c] == 'R') {
+				if (G[row_c][col_c] == 'R') {
 					if (victim != 'b' && victim != 'B') {
 						return 0;
 					}
@@ -394,7 +397,7 @@ int do_move(char* move) {
 						return 0;
 					}
 				}
-				board[row_c + 1][col_c - 1] = flipped ? '"' : '.';
+				G[row_c + 1][col_c - 1] = flipped ? '"' : '.';
 			} else {
 				return 0;
 			}
@@ -404,10 +407,10 @@ int do_move(char* move) {
 			fprintf(logfile, "Move is a jump up\n");
 			// When attempting to move right
 			if (col_t == col_c + 2) {
-				char victim = board[row_c - 1][col_c + 1];
+				char victim = G[row_c - 1][col_c + 1];
 				fprintf(logfile, "Attempting to jump space '%c' [%d][%d]\n", victim, row_c - 1, col_c + 1);
 				// If piece is black
-				if (board[row_c][col_c] == 'B') {
+				if (G[row_c][col_c] == 'B') {
 					if (victim != 'r' && victim != 'R') {
 						return 0;
 					}
@@ -418,14 +421,14 @@ int do_move(char* move) {
 						return 0;
 					}
 				}
-				board[row_c - 1][col_c + 1] = flipped ? '"' : '.';
+				G[row_c - 1][col_c + 1] = flipped ? '"' : '.';
 			}
 			// When attempting to move left
 			else if (col_t == col_c - 2) {
 				char victim = board[row_c - 1][col_c - 1];
 				fprintf(logfile, "Attempting to jump space '%c' [%d][%d]\n", victim, row_c - 1, col_c - 1);
 				// If piece is black
-				if (board[row_c][col_c] == 'B') {
+				if (G[row_c][col_c] == 'B') {
 					if (victim != 'r' && victim != 'R') {
 						return 0;
 					}
@@ -436,7 +439,7 @@ int do_move(char* move) {
 						return 0;
 					}
 				}
-				board[row_c - 1][col_c - 1] = flipped ? '"' : '.';
+				G[row_c - 1][col_c - 1] = flipped ? '"' : '.';
 			} else {
 				return 0;
 			}
@@ -447,10 +450,10 @@ int do_move(char* move) {
 			return 0;
 		}
 		// Execute the move
-		board[row_t][col_t] = board[row_c][col_c];
-		board[row_c][col_c] = flipped ? '"' : '.';
+		G[row_t][col_t] = G[row_c][col_c];
+		G[row_c][col_c] = flipped ? '"' : '.';
 		fprintf(logfile, "Move successful.\nNew board:\n");
-		print_board(logfile);
+		print_board(logfile, board);
 		return 1;
 	}
 }
@@ -459,59 +462,166 @@ Node* get_movelist() {
 	return movelist;
 }
 
+int get_score_for_board(char** G, int do_black) {
+	fprintf("Getting %s score for board\n", do_black ? "black" : "red");
+	printboard(logfile, G);
+	if (get_possible_moves(do_black) == NULL) {
+		fprintf(
+		return -99;
+	if (get_possible_moves(G, !do_black) == NULL)
+		return 99;
+	score = do_black ?
+		(num_black_pawns() + 2 * num_black_kings()) - (num_red_pawns() + 2 * num_red_kings()) :
+		(num_red_pawns() + 2 * num_red_kings()) - (num_black_pawns() + 2 * num_black_kings());
+	fprintf(logfile, "Score: %s\n", score);
+	return score;
+}
+
+int get_score_for_move(char** G, char* move, int do_black, int D) {
+	fprintf(logfile, "Getting score for %s (lookahead %d)\n", move, D);
+	if (D < 0)
+		return 0;
+	char Gp[8][8];
+	for (int i = 0; i < 8; i++)
+		for (int j = 0; j < 8; j++)
+			Gp[i][j] = G[i][j];
+	do_move(Gp, move);
+	// Base step
+	if (D == 0) {
+		return get_score_for_board(Gp, do_black);
+	}
+	// Recursive step
+	Node* moves = get_possible_moves(Gp, do_black);
+	Node* max = moves;
+	int max_score = -100;
+	for (Node* cursor = moves; cursor; cursor = cursor->next) {
+		int score = get_score_for_move(Gp, move, !do_black, D - 1);
+		if (score > max_score) {
+			max_score = score;
+			max = cursor;
+		}
+	}
+	fprintf(logfile, "Move %s returned a score of %d\n", max_score);
+	return max_score; 
+}
+
 Node* get_possible_moves(char** G, int do_black) {
 	fprintf(logfile, "get_possible_moves called for %s\nConfiguration:\n", do_black ? "black" : "red");
 	print_board(logfile, G);
 	Node* result = NULL;
-	char* movestring = "%c%d->%c%d";
-	for (int row = 0; row < 8; row++) {
-		for (int col = 0; col < 8; col++) {
-			fprintf(logfile, "Checking space [%d][%d] (%c%c)... ", row, col, ctoc(col), rtoc(row));
-			// If checking for black's turn
-			if (do_black) {
-				// Skip if no black piece in position
-				if (!is_black(G, row, col)) {
-					fprintf(logfile, "No black piece found.\n");
-					continue;
-				}
-				fprintf(logfile, "Black piece found.\n");
-				// Check for move 2 left and 2 down
-				fprintf(logfile, "Checking for move to %c%c... ", ctoc(col - 2), rtoc(row + 2));
-				if (row + 2 < 8 && col - 2 >= 0 && is_empty(G, row + 2, col - 2) && is_red(G, row + 1, col - 1)) {
-					char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 2), rtoc(row + 2), 0 };
-					fprintf(logfile, "Possible. Adding %s\n", move);
-					result = movelist_add(result, move);
-				} else {
-					fprintf(logfile, "Not possible.\n");
-				}
-				// Check for move 2 left and 2 up
-				fprintf(logfile, "Checking for move to %c%c... ", ctoc(col - 2), rtoc(row - 2));
-				if (G[row][col] == 'B' && row - 2 >= 0 && col - 2 >= 0 && is_empty(G, row - 2, col - 2) && is_red(G, row - 1, col - 1)) {
-					char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 2), rtoc(row - 2), 0};
-					fprintf(logfile, "Possible. Adding %s\n", move);
-					result = movelist_add(result, move);	
-				} else {
-					fprintf(logfile, "Not possible.\n");
-				}
-				// Check for move 1 left and 1 down
-				fprintf(logfile, "Checking for move to %c%c... ", ctoc(col - 1), rtoc(row + 1));
-				if (row + 1 < 8 && col - 1 >= 0 && is_empty(G, row + 1, col - 1)) {
-					char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 1), rtoc(row + 1), 0 }
-					fprintf(logfile, "Possible. Adding %s\n", move);
-				} else {
-					fprintf(logfile, "Not possible.\n");
-				}
-				// Check for move 1 left and 1 up
-				fprintf(logfile, "Checking for move to %c%c... ", ctoc(col - 1), ctoc(row - 1));
-				if (G[row][col] == 'B' && row - 1 >= 0 && col - 1 >= 0 && is_empty(G, row - 1, col - 1)) {
-					char move[] = { ctoc(col), rtoc(row, '-', '>', ctoc(col - 1), ctoc(row - 1) };
-				}
+	for (int col = 0; col < 8; col++) {
+		for (int row = 7; row >= 0; row--) {
+			// Check for piece
+			fprintf(logfile, "Checking %c%c... ", ctoc(col), rtoc(row));
+			if (do_black ? is_black(G, row, col) : is_red(G, row, col)) {
+				fprintf(logfile, "No %s piece; continue.\n", do_black ? "black" : "red");
+				continue;
 			}
-			// If checking for red's turn
-			else {
-				
+			fprintf(logfile, "%s piece found.\n", do_black ? "black" : "red");
+			// Check left 2 down 2
+			if (move_possible(G, row, col, 2, -2)) {
+				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 2), rtoc(row + 2), 0 };
+				fprintf(logfile, "Possible. Adding %s\n", move);
+				result = movelist_add(result, move);
+			} else {
+				fprintf(logfile, "Not possible.\n");
+			}
+			// Check left 2 up 2
+			if (move_possible(G, row, col, -2, -2)) {
+				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 2), rtoc(row - 2), 0 };
+				fprintf(logfile, "Possible. Adding %s\n", move);
+				result = movelist_add(result, move);
+			} else {
+				fprintf(logfile, "Not possible.\n");
+			}
+			// Check left 1 down 1
+			if (move_possible(G, row, col, 1, -1)) {
+				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 1), rtoc(row + 1), 0 };
+				fprintf(logfile, "Possible. Adding %s\n", move);
+				result = movelist_add(result, move);
+			} else {
+				fprintf(logfile, "Not possible.\n");
+			}
+			// Check left 1 up 1
+			if (move_possible(G, row, col, -1, -1)) {
+				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 1), rtoc(row - 1), 0 };
+				fprintf(logfile, "Possible. Adding %s\n", move);
+				result = movelist_add(result, move);
+			} else {
+				fprintf(logfile, "Not possible.\n");
+			}
+			// Check right 1 down 1
+			if (move_possible(G, row, col, 1, 1)) {
+				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col + 1), rtoc(row + 1), 0 };
+				fprintf(logfile, "Possible. Adding %s\n", move);
+				result = movelist_add(result, move);
+			}
+			// Check right 1 up 1
+			if (move_possible(G, row, col, -1, 1)) {
+				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col + 1), rtoc(row - 1), 0 };
+				fprintf(logfile, "Possible. Adding %s\n", move);
+				result = movelist_add(result, move);
+			} else {
+				fprintf(logfile, "Not possible.\n");
+			}
+			// Check right 2 down 2
+			if (move_possible(G, row, col, 2, 2)) {
+				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col + 2), rtoc(row + 2), 0 };
+				fprintf(logfile, "Possible. Adding %s\n", move);
+				result = movelist_add(result, move);
+			} else {
+				fprintf(logfile, "Not possible.\n");
+			}
+			// Check right 2 up 2
+			if (move_possible(G, row, col, -2, 2)) {
+				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col + 2), rtoc(row - 2), 0 };
+				fprintf(logfile, "Possible. Adding %s\n", move);
+				result = movelist_add(result, move);
+			} else {
+				fprintf(logfile, "Not possible.\n");
 			}
 		}
+	}
+}
+
+int move_possible(char** G, int row, int col, int row_off, int col_off) {
+	fprintf(logfile, "Checking possible: %c%c->%c%c\n... ", ctoc(col), rtoc(row), ctoc(col + col_off), rtoc(row + row_off)); 
+	int do_black;
+	if (is_black(G, row, col))
+		do_black = 1;
+	else if (is_red(G, row, col))
+		do_black = 0;
+	else
+		return 0;
+	// Bounds check
+	if (row + row_off < 0 || row + row_off >= 8 || col + col_off < 0 || col + col_off >= 8)
+		return 0;
+	// Direction check
+	if (row_off > 0 && !(do_black || G[row][col] == 'R'))
+		return 0;
+	if (row_off < 0 && !(!do_black || G[row][col] == 'B'))
+		return 0;
+	// Checking for spaces
+	if (col_off == -2) {
+		if (row_off == 2)
+			return is_empty(G, row + 2, col - 2) && (do_black ? is_red(G, row + 1, col - 1) : is_black(G, row + 1, row - 1));
+		else if (row_off == -2)
+			return is_empty(G, row - 2, col - 2) && (do_black ? is_red(G, row - 1, col - 1) : is_black(G, row - 1, col - 1));
+	} else if (col_off == -1) {
+		if (row_off == 1)
+			return is_empty(G, row + 1, col - 1);
+		else if (row_off == -1)
+			return is_empty(G, row - 1, col - 1);
+	} else if (col_off == 1) {
+		if (row_off == 1)
+			return is_empty(G, row + 1, col + 1);
+		else if (row_off == -1)
+			return is_empty(G, row - 1, col + 1);
+	} else if (col_off == 2) {
+		if (row_off == 2)
+			return is_empty(G, row + 2, col + 2) && (do_black ? is_red(G, row + 1, col + 1) : is_black(G, row + 1, col + 1));
+		else if (row_off == -2)
+			return is_empty(G, row - 2, col + 2) && (do_black ? is_red(G, row - 1, col + 1) : is_black(G, row - 1, col + 1));
 	}
 }
 
@@ -544,7 +654,7 @@ void print_board(FILE* file, char** G) {
 	fprintf(file, "  a b c d e f g h \n");
 	for (int row = 0; row < 8; row++) {
 		fprintf(file, "%d ", 8 - row);
-		/for (int col = 0; col < 8; col++) {
+		for (int col = 0; col < 8; col++) {
 			fprintf(file, "%c ", G[row][col]);
 		}
 		fprintf(file, "\n");

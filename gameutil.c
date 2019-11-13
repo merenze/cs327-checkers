@@ -27,24 +27,24 @@ const char ERROR_RULES[] = "Input error (line %d): Invalid token ('%s') in rules
 
 // Some helper methods.
 char rtoc(int);
-int move_possible(char**, int, int, int, int);
+int move_possible(char[8][8], int, int, int, int);
 char ctoc(int);
 char rtoc(int);
-int is_empty(char**, int, int);
-int is_red(char**, int, int);
-int is_black(char**, int, int);
+int is_empty(char[8][8], int, int);
+int is_red(char[8][8], int, int);
+int is_black(char[8][8], int, int);
 void add_move(char*);
-int count_occurrences(char);
+int count_occurrences(char[8][8], char);
 int board_valid();
 int get_rules(FILE*, char*);
 int get_board(FILE*, char*);
 int move_valid(char*);
 int get_moves(FILE*, char*);
-void print_board(FILE*, char**);
+void print_board(FILE*, char[8][8]);
 
 // The main dish.
 int load_config(FILE* infile) {
-	logfile = fopen("log", "w");
+	logfile = fopen("gameutil.log", "w");
 	// Use this to check for EOF
 	int has_input;
 	// Some variables and stuff
@@ -112,7 +112,6 @@ int load_config(FILE* infile) {
 	if (!get_moves(infile, token)) {
 		return 0;
 	}
-	fclose(logfile);
 	return 1;
 }
 
@@ -125,46 +124,46 @@ int get_rules(FILE* infile, char* token) {
 			return 0;
 		}
 		if (!strcmp(token, "no")) {
-			fprintf(logfile, "Token 'no' found. Checking for 'capture'.\n");
+			fprintf(logfile, "get_rules: Token 'no' found. Checking for 'capture'.\n");
 			if (!next_token(infile, token, LENGTH)) {
 				fprintf(stderr, "Invalid input (line %d): Expected 'capture' but found EOF.\n", get_line());
 				return 0;
 			}
 			if (!strcmp(token, "capture")) {
-				fprintf(logfile, "Token 'capture' found. Setting no_capture to 1.\n"); // DEBUG
+				fprintf(logfile, "get_rules: Token 'capture' found. Setting no_capture to 1.\n"); // DEBUG
 				no_capture = 1;
 			} else {
 				fprintf(stderr, ERROR_RULES, get_line(), token);
 				return 0;
 			}
 		} else if (!strcmp(token, "capture")) {
-			fprintf(logfile, "Token 'capture' found. Setting no_capture to 0.\n"); // DEBUG
+			fprintf(logfile, "get_rules: Token 'capture' found. Setting no_capture to 0.\n"); // DEBUG
 			no_capture = 0;
 		} else if (!strcmp(token, "multiple")) {
-			fprintf(logfile, "Token 'multiple' found. Checking for 'jumps'.\n"); // DEBUG
+			fprintf(logfile, "get_rules: Token 'multiple' found. Checking for 'jumps'.\n"); // DEBUG
 			if (!next_token(infile, token, LENGTH)) {
 				fprintf(stderr, "Invalid input (line %d): Expected 'capture' but found EOF.\n", get_line());
 				return 0;
 			}
 			if (!strcmp(token, "jumps")) {
-				fprintf(logfile, "Token 'jumps' found. Setting multiple_jumps to 1.\n"); // DEBUG
+				fprintf(logfile, "get_rules: Token 'jumps' found. Setting multiple_jumps to 1.\n"); // DEBUG
 				multiple_jumps = 1;
 				if (!next_token(infile, token, LENGTH)) {
 					fprintf(stderr, "Invalid input (line %d): Expected rule but found EOF.\n", get_line());
 					return 0;
 				}
 			} else {
-			fprintf(logfile, "Token 'jumps' not found after 'multiple'.\n"); // DEBUG
+			fprintf(logfile, "get_rules: Token 'jumps' not found after 'multiple'.\n"); // DEBUG
 				fprintf(stderr, ERROR_RULES, get_line(), token);
 				return 0;
 			}
 		} else if (!strcmp(token, "single")) {
-			fprintf(logfile, "Token 'single' found. Checking for 'jumps'.\n");
+			fprintf(logfile, "get_rules: Token 'single' found. Checking for 'jumps'.\n");
 			if (!next_token(infile, token, LENGTH)) {
 				fprintf(stderr, "Invalid input (line %d): Expected 'jumps' but found EOF.\n", get_line());
 			}
 			if (!strcmp(token, "jumps")) {
-				fprintf(logfile, "Token 'jumps' found. Setting multiple_jumps to 0.");
+				fprintf(logfile, "get_rules: Token 'jumps' found. Setting multiple_jumps to 0.\n");
 				if (!next_token(infile, token, LENGTH)) {
 					fprintf(stderr, "Invalid input (line %d): Expected rule but found EOF.\n", get_line());
 					return 0;
@@ -179,6 +178,7 @@ int get_rules(FILE* infile, char* token) {
 }
 
 int get_board(FILE* infile, char* token) {
+	fprintf(logfile, "Call to get_board()\n");
 	if (!next_token(infile, token, LENGTH)) {
 		fprintf(stderr, "Invalid input (line %d): EOF reached.\n", get_line());
 		return 0;
@@ -189,7 +189,7 @@ int get_board(FILE* infile, char* token) {
 		for (int i = 0; token[i] != 0 && row < 8; i++) {
 			if(token[i] == 'r' || token[i] == 'R' || token[i] == 'b' || token[i] == 'B' || token[i] == '.' || token[i] == '\"') {
 				board[row][col++] = token[i];
-				fprintf(logfile, "Added '%c' to board[%d][%d].\n", token[i], row, col - 1); // DEBUG
+				fprintf(logfile, "get_board: Added '%c' to board[%d][%d]\n", token[i], row, col - 1); // DEBUG
 				if (col == 8) {
 					col = 0;
 					row++;
@@ -228,28 +228,28 @@ int is_multiple_jumps() {
 	return multiple_jumps;
 }
 
-int num_black_pawns() {
-	return count_occurrences('b');
+int num_black_pawns(char G[8][8]) {
+	return count_occurrences(G, 'b');
 }
 
-int num_black_kings() {
-	return count_occurrences('B');
+int num_black_kings(char G[8][8]) {
+	return count_occurrences(G, 'B');
 }
 
-int num_red_pawns() {
-	return count_occurrences('r');
+int num_red_pawns(char G[8][8]) {
+	return count_occurrences(G, 'r');
 }
 
-int num_red_kings() {
-	return count_occurrences('R');
+int num_red_kings(char G[8][8]) {
+	return count_occurrences(G, 'R');
 }
 
 // Count the number of occurrences of a char in board.
-int count_occurrences(char ch) {
+int count_occurrences(char G[8][8], char ch) {
 	int result = 0;
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
-			if (board[i][j] == ch) {
+			if (G[i][j] == ch) {
 				result++;
 			}
 		}
@@ -291,7 +291,7 @@ int board_valid() {
  * This method checks whether the input token for a move is of a valid format.
  * It does NOT check if the move is legal.
  */
-int move_valid(char move[]) {
+int move_valid(char* move) {
 	// String is wrong length
 	if (!multiple_jumps && strlen(move) != 6) {
 		return 0;
@@ -333,7 +333,7 @@ int move_valid(char move[]) {
  *
  * Returns:	1 on success (move is legal). 0 on failure (move is illegal).
  */
-int do_move(char** G, char* move) {
+int do_move(char G[8][8], char* move) {
 	fprintf(logfile, "\nCall to do_move(%s)\n", move);
 	for (int i = 0; i + 5 < strlen(move); i += 4) {
 		// Convert rank and file into board row and column
@@ -462,22 +462,25 @@ Node* get_movelist() {
 	return movelist;
 }
 
-int get_score_for_board(char** G, int do_black) {
-	fprintf("Getting %s score for board\n", do_black ? "black" : "red");
-	printboard(logfile, G);
-	if (get_possible_moves(do_black) == NULL) {
-		fprintf(
+int get_score_for_board(char G[8][8], int do_black) {
+	fprintf(logfile, "Getting %s score for board\n", do_black ? "black" : "red");
+	print_board(logfile, G);
+	if (get_possible_moves(G, do_black) == NULL) {
+		fprintf(logfile, "No possible moves. Score 99.\n");
 		return -99;
-	if (get_possible_moves(G, !do_black) == NULL)
+	}
+	if (get_possible_moves(G, !do_black) == NULL) {
+		fprintf(logfile, "No possible moves for enemy. Score 99.\n");
 		return 99;
-	score = do_black ?
-		(num_black_pawns() + 2 * num_black_kings()) - (num_red_pawns() + 2 * num_red_kings()) :
-		(num_red_pawns() + 2 * num_red_kings()) - (num_black_pawns() + 2 * num_black_kings());
-	fprintf(logfile, "Score: %s\n", score);
+	}
+	int score = do_black ?
+		(num_black_pawns(G) + 2 * num_black_kings(G)) - (num_red_pawns(G) + 2 * num_red_kings(G)) :
+		(num_red_pawns(G) + 2 * num_red_kings(G)) - (num_black_pawns(G) + 2 * num_black_kings(G));
+	fprintf(logfile, "Score: %d\n", score);
 	return score;
 }
 
-int get_score_for_move(char** G, char* move, int do_black, int D) {
+int get_score_for_move(char G[8][8], char* move, int do_black, int D) {
 	fprintf(logfile, "Getting score for %s (lookahead %d)\n", move, D);
 	if (D < 0)
 		return 0;
@@ -501,23 +504,24 @@ int get_score_for_move(char** G, char* move, int do_black, int D) {
 			max = cursor;
 		}
 	}
-	fprintf(logfile, "Move %s returned a score of %d\n", max_score);
+	fprintf(logfile, "Move %s returned a score of %d\n", move, max_score);
 	return max_score; 
 }
 
-Node* get_possible_moves(char** G, int do_black) {
-	fprintf(logfile, "get_possible_moves called for %s\nConfiguration:\n", do_black ? "black" : "red");
+Node* get_possible_moves(char G[8][8], int do_black) {
+	fprintf(logfile, "Call to get_possible_moves(%s)\nConfiguration:\n", do_black ? "black" : "red");
 	print_board(logfile, G);
 	Node* result = NULL;
 	for (int col = 0; col < 8; col++) {
 		for (int row = 7; row >= 0; row--) {
 			// Check for piece
-			fprintf(logfile, "Checking %c%c... ", ctoc(col), rtoc(row));
-			if (do_black ? is_black(G, row, col) : is_red(G, row, col)) {
+			fprintf(logfile, "get_possible_moves: Checking %c%c... ", ctoc(col), rtoc(row));
+			if (do_black && !is_black(G, row, col) || !do_black && !is_red(G, row, col)) {
 				fprintf(logfile, "No %s piece; continue.\n", do_black ? "black" : "red");
 				continue;
 			}
 			fprintf(logfile, "%s piece found.\n", do_black ? "black" : "red");
+			print_board(logfile, G);
 			// Check left 2 down 2
 			if (move_possible(G, row, col, 2, -2)) {
 				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 2), rtoc(row + 2), 0 };
@@ -584,8 +588,8 @@ Node* get_possible_moves(char** G, int do_black) {
 	}
 }
 
-int move_possible(char** G, int row, int col, int row_off, int col_off) {
-	fprintf(logfile, "Checking possible: %c%c->%c%c\n... ", ctoc(col), rtoc(row), ctoc(col + col_off), rtoc(row + row_off)); 
+int move_possible(char G[8][8], int row, int col, int row_off, int col_off) {
+	fprintf(logfile, "move_possible: Checking possible: %c%c->%c%c... ", ctoc(col), rtoc(row), ctoc(col + col_off), rtoc(row + row_off)); 
 	int do_black;
 	if (is_black(G, row, col))
 		do_black = 1;
@@ -633,15 +637,15 @@ char ctoc(int c) {
 	return (c >= 0 && c < 8) ? ('a' + c) : '#';
 }
 
-int is_empty(char** G, int row, int col) {
+int is_empty(char G[8][8], int row, int col) {
 	return G[row][col] == '.' || G[row][col] == '"';
 }
 
-int is_red(char** G, int row, int col) {
+int is_red(char G[8][8], int row, int col) {
 	return G[row][col] == 'r' || G[row][col] == 'R';
 }
 
-int is_black(char** G, int row, int col) {
+int is_black(char G[8][8], int row, int col) {
 	return G[row][col] == 'b' || G[row][col] == 'B';
 }
 
@@ -650,7 +654,7 @@ int get_num_moves() {
 	return num_moves;
 }
 // For debugging
-void print_board(FILE* file, char** G) {
+void print_board(FILE* file, char G[8][8]) {
 	fprintf(file, "  a b c d e f g h \n");
 	for (int row = 0; row < 8; row++) {
 		fprintf(file, "%d ", 8 - row);

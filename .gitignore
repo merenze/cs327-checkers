@@ -4,7 +4,7 @@ change
 
 # Output files 
 *.txt
-log
+*.log
 
 # Test input
 part2/
@@ -14,4 +14,3 @@ part3/
 # Temp programs
 helloworld
 helloworld.c
-loghello

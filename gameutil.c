@@ -348,8 +348,8 @@ int do_move(char G[8][8], char* move) {
 		int col_c = move[i] - 'a';		// Current column
 		int col_t = move[i + 4] - 'a';		// Target column
 		
-		fprintf(logfile, "\nCurrent row: %c%c [%d][%d]\nTarget row: %c%c [%d][%d]\nInitial board:\n",
-				move[i], move[i+1], row_c, col_c, move[i+4], move[i+5], row_t, col_t);
+		fprintf(logfile, "\nCurrent row: %c%c\nTarget row: %c%c\nInitial board:\n",
+				move[i], move[i+1], move[i+4], move[i+5]);
 		print_board(logfile, G);
 		// Check for a piece at the current position
 		if (!(G[row_c][col_c] == 'r' || G[row_c][col_c] == 'R' || G[row_c][col_c] == 'b' || G[row_c][col_c] == 'B')) {
@@ -459,7 +459,7 @@ int do_move(char G[8][8], char* move) {
 		G[row_t][col_t] = G[row_c][col_c];
 		G[row_c][col_c] = flipped ? '"' : '.';
 		fprintf(logfile, "Move successful.\nNew board:\n");
-		print_board(logfile, board);
+		print_board(logfile, G);
 		return 1;
 	}
 }
@@ -469,20 +469,21 @@ Node* get_movelist() {
 }
 
 int get_score_for_board(char G[8][8], int do_black) {
-	fprintf(logfile, "Getting %s score for board\n", do_black ? "black" : "red");
+	fprintf(logfile, "Call to get_score_for_board()\n");
+	fprintf(logfile, "get_score_for_board: Getting %s score for board\n", do_black ? "black" : "red");
 	print_board(logfile, G);
 	if (get_possible_moves(G, do_black) == NULL) {
-		fprintf(logfile, "No possible moves. Score 99.\n");
+		fprintf(logfile, "get_score_for_board: No possible moves. Score 99.\n");
 		return -99;
 	}
 	if (get_possible_moves(G, !do_black) == NULL) {
-		fprintf(logfile, "No possible moves for enemy. Score 99.\n");
+		fprintf(logfile, "get_score_for_board: No possible moves for enemy. Score 99.\n");
 		return 99;
 	}
 	int score = do_black ?
 		(num_black_pawns(G) + 2 * num_black_kings(G)) - (num_red_pawns(G) + 2 * num_red_kings(G)) :
 		(num_red_pawns(G) + 2 * num_red_kings(G)) - (num_black_pawns(G) + 2 * num_black_kings(G));
-	fprintf(logfile, "Score: %d\n", score);
+	fprintf(logfile, "get_score_for_board: Score %d\n", score);
 	return score;
 }
 
@@ -499,19 +500,23 @@ int get_score_for_move(char G[8][8], char* move, int do_black, int D) {
 	if (D == 0) {
 		return get_score_for_board(Gp, do_black);
 	}
-	// Recursive step
+	// Get moves for current board
 	Node* moves = get_possible_moves(Gp, do_black);
-	Node* max = moves;
+	// Get possible responses
+	Node* best_response;
 	int max_score = -100;
 	for (Node* cursor = moves; cursor; cursor = cursor->next) {
-		int score = get_score_for_move(Gp, move, !do_black, D - 1);
-		if (score > max_score) {
+		int score = get_score_for_move(Gp, cursor->move, !do_black, D - 1);
+		if (max_score > score) {
 			max_score = score;
-			max = cursor;
+			best_response = cursor;
 		}
 	}
-	fprintf(logfile, "Move %s returned a score of %d\n", move, max_score);
-	return max_score; 
+	fprintf(logfile, "get_score_for_move: Optimal response to %s is %s\n", move, best_response->move);
+	do_move(Gp, best_response->move);
+	int score = get_score_for_board(Gp, do_black);
+	fprintf(logfile, "get_score_for_move: Move %s returned a score of %d", move, max_score);
+	return score; 
 }
 
 Node* get_possible_moves(char G[8][8], int do_black) {

@@ -12,3 +12,6 @@ rankmoves: rankmoves.c gameutil.c gameutil.h inpututil.c inpututil.h movelist.c 
 hello: hello.c gameutil.c gameutil.h inpututil.c inpututil.h movelist.c movelist.h
 	gcc -o hello hello.c movelist.c gameutil.c inpututil.c
 
+clean:
+	rm -f info change rankmoves info.log rankmoves.log gameutil.log movelist.log
+

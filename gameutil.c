@@ -206,11 +206,17 @@ int get_board(FILE* infile, char* token) {
 }
 
 int get_moves(FILE* infile, char* token) {
+	fprintf(logfile, "Call to get_moves\n");
+	fflush(logfile);
 	for (num_moves = 0; next_token(infile, token, LENGTH); num_moves++) {
+		fprintf(logfile, "get_moves: Found '%s'... ", token);
 		if (!move_valid(token)) {
+			fprintf(logfile, "Invalid\n");
 			fprintf(stderr, "Invalid input (line %d): Expected move but found '%s'.\n", get_line(), token);
 			return 0;
 		}
+		fprintf(logfile, "Valid\n");
+		fflush(logfile);
 		movelist_add(movelist, token);
 	}
 	return 1;
@@ -522,6 +528,22 @@ Node* get_possible_moves(char G[8][8], int do_black) {
 			}
 			fprintf(logfile, "%s piece found.\n", do_black ? "black" : "red");
 			print_board(logfile, G);
+			/*
+			for (int j = col - 2; j <= col + 2; j++) {
+				for (int i = row + 2; i >= row - 2; row--) {
+					int rowoff = row - i;
+					int coloff = col - j;
+					if (rowoff == coloff || rowoff == -coloff) {
+						if (move_possible(G, row, col, rowoff, coloff)) {
+							char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(j), rtoc(i), 0 };
+							fprintf(logfile, "Possible. ");
+							result = movelist_add(result, move);
+							fprintf(logfile, "Added %s\n", move);
+						}
+					}
+				}
+			}
+			*/
 			fflush(logfile);
 			// Check left 2 down 2
 			if (move_possible(G, row, col, 2, -2)) {
@@ -601,6 +623,7 @@ Node* get_possible_moves(char G[8][8], int do_black) {
 
 int move_possible(char G[8][8], int row, int col, int row_off, int col_off) {
 	fprintf(logfile, "move_possible: Checking possible: %c%c->%c%c... ", ctoc(col), rtoc(row), ctoc(col + col_off), rtoc(row + row_off)); 
+	fflush(logfile);
 	int do_black;
 	if (is_black(G, row, col))
 		do_black = 1;

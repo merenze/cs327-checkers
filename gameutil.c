@@ -619,6 +619,7 @@ Node* get_possible_moves(char G[8][8], int do_black) {
 			fflush(logfile);
 		}
 	}
+	return result;
 }
 
 int move_possible(char G[8][8], int row, int col, int row_off, int col_off) {

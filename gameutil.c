@@ -522,6 +522,7 @@ Node* get_possible_moves(char G[8][8], int do_black) {
 			}
 			fprintf(logfile, "%s piece found.\n", do_black ? "black" : "red");
 			print_board(logfile, G);
+			fflush(logfile);
 			// Check left 2 down 2
 			if (move_possible(G, row, col, 2, -2)) {
 				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 2), rtoc(row + 2), 0 };
@@ -530,6 +531,7 @@ Node* get_possible_moves(char G[8][8], int do_black) {
 			} else {
 				fprintf(logfile, "Not possible.\n");
 			}
+			fflush(logfile);
 			// Check left 2 up 2
 			if (move_possible(G, row, col, -2, -2)) {
 				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 2), rtoc(row - 2), 0 };
@@ -538,6 +540,7 @@ Node* get_possible_moves(char G[8][8], int do_black) {
 			} else {
 				fprintf(logfile, "Not possible.\n");
 			}
+			fflush(logfile);
 			// Check left 1 down 1
 			if (move_possible(G, row, col, 1, -1)) {
 				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 1), rtoc(row + 1), 0 };
@@ -546,6 +549,7 @@ Node* get_possible_moves(char G[8][8], int do_black) {
 			} else {
 				fprintf(logfile, "Not possible.\n");
 			}
+			fflush(logfile);
 			// Check left 1 up 1
 			if (move_possible(G, row, col, -1, -1)) {
 				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col - 1), rtoc(row - 1), 0 };
@@ -554,12 +558,16 @@ Node* get_possible_moves(char G[8][8], int do_black) {
 			} else {
 				fprintf(logfile, "Not possible.\n");
 			}
+			fflush(logfile);
 			// Check right 1 down 1
 			if (move_possible(G, row, col, 1, 1)) {
 				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col + 1), rtoc(row + 1), 0 };
 				fprintf(logfile, "Possible. Adding %s\n", move);
 				result = movelist_add(result, move);
+			} else {
+				fprintf(logfile, "Not possible.\n");
 			}
+			fflush(logfile);
 			// Check right 1 up 1
 			if (move_possible(G, row, col, -1, 1)) {
 				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col + 1), rtoc(row - 1), 0 };
@@ -568,6 +576,7 @@ Node* get_possible_moves(char G[8][8], int do_black) {
 			} else {
 				fprintf(logfile, "Not possible.\n");
 			}
+			fflush(logfile);
 			// Check right 2 down 2
 			if (move_possible(G, row, col, 2, 2)) {
 				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col + 2), rtoc(row + 2), 0 };
@@ -576,6 +585,7 @@ Node* get_possible_moves(char G[8][8], int do_black) {
 			} else {
 				fprintf(logfile, "Not possible.\n");
 			}
+			fflush(logfile);
 			// Check right 2 up 2
 			if (move_possible(G, row, col, -2, 2)) {
 				char move[] = { ctoc(col), rtoc(row), '-', '>', ctoc(col + 2), rtoc(row - 2), 0 };
@@ -584,6 +594,7 @@ Node* get_possible_moves(char G[8][8], int do_black) {
 			} else {
 				fprintf(logfile, "Not possible.\n");
 			}
+			fflush(logfile);
 		}
 	}
 }

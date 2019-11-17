@@ -8,9 +8,11 @@
 #include <string.h>
 #include "movelist.h"
 
-FILE* movelist_logfile;
+FILE* movelist_logfile = NULL;
 
 int movelist_contains(Node* head, char* move) {
+	if (!movelist_logfile)
+		movelist_logfile = fopen("movelist.log", "w");
 	movelist_logfile = fopen("movelist.log", "a");
 	fprintf(movelist_logfile, "Call to movelist_contains(%s)\n", move);
 	fflush(movelist_logfile);
@@ -24,7 +26,8 @@ int movelist_contains(Node* head, char* move) {
 }
 
 Node* movelist_add(Node* head, char* move) {
-	movelist_logfile = fopen("movelist.log", "a");
+	if (!movelist_logfile)
+		movelist_logfile = fopen("movelist.log", "a");
 	fprintf(movelist_logfile, "Call to movelist_add(%s)\n", move);
 	fflush(movelist_logfile);
 	if (!head) {

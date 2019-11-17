@@ -340,7 +340,7 @@ int move_valid(char* move) {
  * Returns:	1 on success (move is legal). 0 on failure (move is illegal).
  */
 int do_move(char G[8][8], char* move) {
-	fprintf(logfile, "\nCall to do_move(%s)\n", move);
+	fprintf(logfile, "Call to do_move(%s)\n", move);
 	for (int i = 0; i + 5 < strlen(move); i += 4) {
 		// Convert rank and file into board row and column
 		int row_c = 7 - move[i + 1] + '1';	// Current row
@@ -348,7 +348,7 @@ int do_move(char G[8][8], char* move) {
 		int col_c = move[i] - 'a';		// Current column
 		int col_t = move[i + 4] - 'a';		// Target column
 		
-		fprintf(logfile, "\nCurrent row: %c%c\nTarget row: %c%c\nInitial board:\n",
+		fprintf(logfile, "Current row: %c%c\nTarget row: %c%c\nInitial board:\n",
 				move[i], move[i+1], move[i+4], move[i+5]);
 		print_board(logfile, G);
 		// Check for a piece at the current position
@@ -624,6 +624,9 @@ Node* get_possible_moves(char G[8][8], int do_black) {
 			fflush(logfile);
 		}
 	}
+	fprintf(logfile, "get_possible_moves: Exiting with result: ");
+	for (Node* cursor = result; cursor; cursor = cursor->next)
+		fprintf(logfile, "%s%s", cursor->move, cursor->next ? ", " : "\n");
 	return result;
 }
 

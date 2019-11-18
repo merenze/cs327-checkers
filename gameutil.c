@@ -389,7 +389,7 @@ int do_move(char G[8][8], char* move) {
 			}
 			// When attempting to move left
 			else if (col_t == col_c - 2) {
-				char victim = board[row_c + 1][col_c - 1];
+				char victim = G[row_c + 1][col_c - 1];
 				fprintf(logfile, "Attempting to jump space '%c' [%d][%d]\n", victim, row_c + 1, col_c - 1);
 				// If piece is red
 				if (G[row_c][col_c] == 'R') {
@@ -431,7 +431,7 @@ int do_move(char G[8][8], char* move) {
 			}
 			// When attempting to move left
 			else if (col_t == col_c - 2) {
-				char victim = board[row_c - 1][col_c - 1];
+				char victim = G[row_c - 1][col_c - 1];
 				fprintf(logfile, "Attempting to jump space '%c' [%d][%d]\n", victim, row_c - 1, col_c - 1);
 				// If piece is black
 				if (G[row_c][col_c] == 'B') {
@@ -501,11 +501,12 @@ int get_score_for_move(char G[8][8], char* move, int do_black, int D) {
 		return get_score_for_board(Gp, do_black);
 	}
 	// Get moves for current board
-	Node* moves = get_possible_moves(Gp, do_black);
+//	Node* moves = get_possible_moves(Gp, do_black);
+	Node* responses = get_possible_moves(Gp, !do_black);
 	// Get possible responses
 	Node* best_response;
 	int max_score = -100;
-	for (Node* cursor = moves; cursor; cursor = cursor->next) {
+	for (Node* cursor = responses; cursor; cursor = cursor->next) {
 		int score = get_score_for_move(Gp, cursor->move, !do_black, D - 1);
 		if (max_score > score) {
 			max_score = score;

@@ -10,21 +10,6 @@
 
 FILE* movelist_logfile = NULL;
 
-int movelist_contains(Node* head, char* move) {
-	if (!movelist_logfile)
-		movelist_logfile = fopen("movelist.log", "w");
-	movelist_logfile = fopen("movelist.log", "a");
-	fprintf(movelist_logfile, "Call to movelist_contains(%s)\n", move);
-	fflush(movelist_logfile);
-	for (Node* cursor = head; cursor; cursor == cursor->next) {
-		if (!strcmp(cursor->move, move)) {
-			return 1;
-		}
-	}
-	fclose(movelist_logfile);
-	return 0;
-}
-
 Node* movelist_add(Node* head, char* move) {
 	if (!movelist_logfile)
 		movelist_logfile = fopen("movelist.log", "a");
@@ -47,8 +32,8 @@ Node* movelist_add(Node* head, char* move) {
 	cursor->next = (Node*) malloc(sizeof(Node));
 	strcpy(cursor->next->move, move);
 	cursor->next->next = NULL;
-	fprintf(movelist_logfile, "Added %s\n", cursor->next->move);
-	fclose(movelist_logfile);
+	fprintf(movelist_logfile, "Added %s (head %s)", cursor->next->move, head->move);
+	fflush(movelist_logfile);
 	return head;
 }
 

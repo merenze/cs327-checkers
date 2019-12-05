@@ -473,17 +473,17 @@ int get_score_for_board(char G[8][8], int do_black) {
 	fprintf(logfile, "get_score_for_board: Getting %s score for board\n", do_black ? "black" : "red");
 	print_board(logfile, G);
 	if (get_possible_moves(G, do_black) == NULL) {
-		fprintf(logfile, "get_score_for_board: No possible moves. Score 99.\n");
+		fprintf(logfile, "get_score_for_board: No possible moves. Score -99.\n");
 		return -99;
 	}
 	if (get_possible_moves(G, !do_black) == NULL) {
-		fprintf(logfile, "get_score_for_board: No possible moves for enemy. Score 99.\n");
+		fprintf(logfile, "get_score_for_board: No possible moves for opponent. Score 99.\n");
 		return 99;
 	}
 	int score = do_black ?
 		(num_black_pawns(G) + 2 * num_black_kings(G)) - (num_red_pawns(G) + 2 * num_red_kings(G)) :
 		(num_red_pawns(G) + 2 * num_red_kings(G)) - (num_black_pawns(G) + 2 * num_black_kings(G));
-	fprintf(logfile, "get_score_for_board: Score %d\n", score);
+	fprintf(logfile, "get_score_for_board: Score %d for %s\n", score, do_black ? "black" : "red");
 	return score;
 }
 
@@ -505,12 +505,14 @@ int get_score_for_move(char G[8][8], char* move, int do_black, int D) {
 	Node* responses = get_possible_moves(Gp, !do_black);
 	// Get possible responses
 	Node* best_response;
-	int max_score = -100;
+	int max_score = 100;
 	for (Node* cursor = responses; cursor; cursor = cursor->next) {
-		int score = get_score_for_move(Gp, cursor->move, !do_black, D - 1);
-		if (max_score > score) {
+		int score = get_score_for_move(Gp, cursor->move, do_black, D - 1);
+		if (max_score < score) {
 			max_score = score;
 			best_response = cursor;
+			fprintf(logfile, "get_score_for_move: New high score: %d for %s\n", max_score, best_response->move);
+			fflush(logfile);
 		}
 	}
 	fprintf(logfile, "get_score_for_move: Optimal response to %s is %s\n", move, best_response->move);

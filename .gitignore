@@ -12,6 +12,5 @@ part1/
 part3/
 
 # Temp programs
-helloworld
-helloworld.c
-/Debug/
+hello
+hello.c

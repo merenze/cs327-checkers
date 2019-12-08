@@ -460,8 +460,8 @@ int do_move(char G[8][8], char* move) {
 		G[row_c][col_c] = flipped ? '"' : '.';
 		fprintf(logfile, "Move successful.\nNew board:\n");
 		print_board(logfile, G);
-		return 1;
 	}
+	return 1;
 }
 
 Node* get_movelist() {
@@ -673,6 +673,7 @@ int move_possible(char G[8][8], int row, int col, int row_off, int col_off) {
 		else if (row_off == -2)
 			return is_empty(G, row - 2, col + 2) && (do_black ? is_red(G, row - 1, col + 1) : is_black(G, row - 1, col + 1));
 	}
+	return 1;
 }
 
 char rtoc(int r) {

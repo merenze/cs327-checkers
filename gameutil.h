@@ -12,7 +12,7 @@
 /**
  * Stores the current layout of the board
  */
-char board[8][8];		
+char board[8][8];
 /**
  * Load rules turn, board and moves from input
  */

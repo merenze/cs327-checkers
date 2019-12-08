@@ -11,7 +11,7 @@ rankmoves: rankmoves.c gameutil.c gameutil.h inpututil.c inpututil.h movelist.c 
 
 edit: edit.cpp gameutil.c gameutil.h inpututil.c inpututil.h movelist.c movelist.h
 	g++ -c edit.cpp
-	g++ -o edit edit.o -ltermbox gameutil.c inpututil.c
+	g++ -o edit edit.o -ltermbox gameutil.c inpututil.c movelist.c
 
 hello: hello.c gameutil.c gameutil.h inpututil.c inpututil.h movelist.c movelist.h
 	gcc -o hello hello.c movelist.c gameutil.c inpututil.c

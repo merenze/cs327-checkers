@@ -8,7 +8,7 @@
 #include <fstream>
 #include <string.h>
 #include <termbox.h>
-#include "gameutil.h"
+//#include "gameutil.h"
 
 using namespace std;
 
@@ -34,6 +34,7 @@ struct Cursor {
 };
 
 void tb_write(int, int, const char*, int);
+void draw_board_background();
 struct tb_cell* get_cell(int, int);
 
 FILE* file;
@@ -44,8 +45,8 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 	const char* filename = argv[1];
-	file = fopen(filename, "r");
-	load_config(file);
+	//file = fopen(filename, "r");
+	//load_config(file);
 	tb_init();
 
 	// File editor header
@@ -56,6 +57,7 @@ int main(int argc, char** argv) {
 	tb_write(4, LEFT, "Red:", TB_WHITE);
 	tb_write(4, RIGHT, "Black:", TB_WHITE);
 	
+	draw_board_background();
 	
 
 	struct tb_event* event = (tb_event*) malloc(sizeof(tb_event));
@@ -91,4 +93,22 @@ void tb_write(int line, int justify, const char* string, int color) {
 struct tb_cell* get_cell(int x, int y) {
 	int index = y * tb_width() + x;
 	return &(tb_cell_buffer()[index]);
+}
+
+void draw_board_background() {
+	int square_width = 5;
+	int square_height = 3;
+	for (int y = 0; y < 8; y++) {
+		for (int x = 0; x < 8; x++) {
+			for (int k = 0; k < square_height; k++) {
+				for (int l = 0; l < square_width; l++) {
+					int cx = BOARD_START_X + x * square_width + l;
+					int cy = BOARD_START_Y + y * square_height + k;
+					int red_square = (x % 2 == 0 && y % 2 == 1) || (x % 2 == 1 && y % 2 == 0);
+					tb_change_cell(cx, cy, ' ', TB_DEFAULT, red_square ? TB_RED : TB_BLACK);
+				}
+			}
+		}
+	}
+	tb_present();
 }

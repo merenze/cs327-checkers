@@ -269,7 +269,8 @@ void map_boards() {
 		for (int j = 0; j < 2 && move_map[i][j]; j++) {
 			if (valid) {
 				board_map[i][j] = copy_board(board);
-				valid_map[i][j] = valid = do_move(board, move_map[i][j]->move, black_turn);
+				valid_map[i][j] = valid;
+				valid = do_move(board, move_map[i][j]->move, black_turn);
 				black_turn = !black_turn;
 			} else {
 				board_map[i][j] = board;

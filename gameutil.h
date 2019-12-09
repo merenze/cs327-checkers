@@ -52,7 +52,7 @@ int get_num_moves();
 /**
  * Attempt to execute a move
  */
-int do_move(char**, char*);	
+int do_move(char**, char*, int);
 /**
  * Get list of possible moves
  */

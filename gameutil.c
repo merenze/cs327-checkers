@@ -345,7 +345,7 @@ int move_valid(char* move) {
  *
  * Returns:	1 on success (move is legal). 0 on failure (move is illegal).
  */
-int do_move(char** G, char* move) {
+int do_move(char** G, char* move, int black_turn) {
 	fprintf(logfile, "Call to do_move(%s)\n", move);
 	for (int i = 0; i + 5 < strlen(move); i += 4) {
 		// Convert rank and file into board row and column
@@ -360,6 +360,11 @@ int do_move(char** G, char* move) {
 		// Check for a piece at the current position
 		if (!(G[row_c][col_c] == 'r' || G[row_c][col_c] == 'R' || G[row_c][col_c] == 'b' || G[row_c][col_c] == 'B')) {
 			fprintf(logfile, "Illegal move: No piece at start space]\n");	// DEBUG
+			return 0;
+		}
+		// Check turn
+		if (is_red(G, row_c, col_c) && black_turn || is_black(G, row_c, col_c) && !black_turn) {
+			fprintf(logfile, "Illegal move: Wrong turn\n");
 			return 0;
 		}
 		// Red pawns cannot move down. Black pawns cannot move up
@@ -510,7 +515,7 @@ int get_score_for_move(char** G, char* move, int do_black, int D) {
 	for (int i = 0; i < 8; i++)
 		for (int j = 0; j < 8; j++)
 			Gp[i][j] = G[i][j];
-	do_move(Gp, move);
+	do_move(Gp, move, do_black);
 	// Base step
 	if (D == 0) {
 		return get_score_for_board(Gp, do_black);
@@ -531,7 +536,7 @@ int get_score_for_move(char** G, char* move, int do_black, int D) {
 		}
 	}
 	fprintf(logfile, "get_score_for_move: Optimal response to %s is %s\n", move, best_response->move);
-	do_move(Gp, best_response->move);
+	do_move(Gp, best_response->move, do_black);
 	int score = get_score_for_board(Gp, do_black);
 	fprintf(logfile, "get_score_for_move: Move %s returned a score of %d", move, max_score);
 	return score; 

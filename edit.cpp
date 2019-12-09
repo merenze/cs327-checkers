@@ -263,12 +263,14 @@ void map_moves() {
 void map_boards() {
 	// Get initial board layout
 	char** board = copy_board(get_board());
+	int black_turn = is_black_turn();
 	int valid = 1;
-	for (int i = 0; move_map[i][1]; i++) {
+	for (int i = 0; move_map[i][0]; i++) {
 		for (int j = 0; j < 2 && move_map[i][j]; j++) {
 			if (valid) {
 				board_map[i][j] = copy_board(board);
-				valid_map[i][j] = valid = do_move(board, move_map[i][j]->move);
+				valid_map[i][j] = valid = do_move(board, move_map[i][j]->move, black_turn);
+				black_turn = !black_turn;
 			} else {
 				board_map[i][j] = board;
 			}
@@ -318,6 +320,7 @@ void draw_board() {
 			int red_space = x % 2 == 0 && y % 2 == 1 || x % 2 == 1 && y % 2 == 0;
 			tb_change_cell(cx, cy, ch, (board[y][x] == 'r' || board[y][x] == 'R') ? TB_WHITE : TB_BLACK, (red_space) ? TB_RED : TB_BLACK);
 		}
+	tb_present();
 }
 
 void write_moves() {

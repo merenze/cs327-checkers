@@ -47,6 +47,7 @@ int main(int argc, char** argv) {
 		cout << "Usage: edit <file>\n";
 		return 0;
 	}
+	// Get input file
 	const char* filename = argv[1];
 	infile = fopen(filename, "r");
 	if (!load_config(infile)) {
@@ -63,12 +64,16 @@ int main(int argc, char** argv) {
 	tb_write(2, LEFT, "========================================", TB_WHITE);
 	tb_write(4, LEFT, "Red:", TB_WHITE);
 	tb_write(4, RIGHT, "Black:", TB_WHITE);
+
 	// Write moves to file editor
 	Node* cursor = get_movelist();
+
+	tb_write(FILE_START_Y, LEFT, cursor == NULL ? "Cursor is null" : "Cursor ain't null", TB_WHITE);
+/*
 	for (int line = FILE_START_Y; cursor; cursor = cursor->next) {
 		tb_write(line, ((line++ - FILE_START_Y) % 2 == 0) ? LEFT : RIGHT, cursor->move, TB_WHITE);
 	}
-	
+*/
 	draw_board_background();
 	
 

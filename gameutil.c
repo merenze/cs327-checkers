@@ -35,11 +35,10 @@ char rtoc(int);
 int is_empty(char**, int, int);
 int is_red(char**, int, int);
 int is_black(char**, int, int);
-void add_move(char*);
 int count_occurrences(char**, char);
 int board_valid();
 int get_rules(FILE*, char*);
-int get_board(FILE*, char*);
+int get_layout(FILE*, char*);
 int move_valid(char*);
 int get_moves(FILE*, char*);
 void print_board(FILE*, char**);
@@ -101,7 +100,7 @@ int load_config(FILE* infile) {
 		fprintf(stderr, "Invalid input (line %d): Expected 'BOARD' but found '%s'.\n", get_line(), token);
 		return 0;
 	}
-	if (!get_board(infile, token)) {
+	if (!get_layout(infile, token)) {
 		return 0;
 	}
 	if (!board_valid()) {
@@ -184,7 +183,7 @@ int get_rules(FILE* infile, char* token) {
 	return 1;
 }
 
-int get_board(FILE* infile, char* token) {
+int get_layout(FILE* infile, char* token) {
 	fprintf(logfile, "Call to get_board()\n");
 	if (!next_token(infile, token, LENGTH)) {
 		fprintf(stderr, "Invalid input (line %d): EOF reached.\n", get_line());
@@ -224,7 +223,7 @@ int get_moves(FILE* infile, char* token) {
 		}
 		fprintf(logfile, "Valid\n");
 		fflush(logfile);
-		movelist_add(movelist, token);
+		movelist = movelist_add(movelist, token);
 	}
 	return 1;
 }

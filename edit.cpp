@@ -325,9 +325,9 @@ void draw_board() {
 }
 
 void write_moves() {
-	for (int i = first_line; i < tb_height() && move_map[i][0]; i++)
+	for (int i = first_line; move_map[i][0]; i++)
 		tb_write(FILE_START_Y + i - first_line, LEFT, move_map[i][0]->move, valid_map[i][0] ? TB_GREEN : TB_RED);
-	for (int i = first_line; i < tb_height() && move_map[i][1]; i++)
+	for (int i = first_line; move_map[i][1]; i++)
 		tb_write(FILE_START_Y + i - first_line, RIGHT, move_map[i][1]->move, valid_map[i][0] ? TB_GREEN : TB_RED);
 }
 

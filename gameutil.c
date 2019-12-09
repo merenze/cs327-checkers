@@ -464,6 +464,13 @@ int do_move(char** G, char* move) {
 		// Execute the move
 		G[row_t][col_t] = G[row_c][col_c];
 		G[row_c][col_c] = flipped ? '"' : '.';
+		// King me!
+		for (int i = 0; i < 8; i++) {
+			if (G[0][i] == 'r')
+				G[0][i] = 'R';
+			if (G[7][i] == 'b')
+				G[7][i] = 'B';
+		}
 		fprintf(logfile, "Move successful.\nNew board:\n");
 		print_board(logfile, G);
 	}

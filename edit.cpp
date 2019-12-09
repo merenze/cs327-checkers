@@ -8,20 +8,22 @@
 #include <fstream>
 #include <string.h>
 #include <termbox.h>
-//#include "gameutil.h"
+
+#include "gameutil.h"
 
 using namespace std;
 
 /**
- * Coordinates used for splitting the box into two screens
+ * Coordinates used for splitting the box into two screens.
+ * Start is inclusive, end is exclusive.
  */
-#define FILE_START_X 0		// Inclusive
-#define FILE_START_Y 5 		// Inclusive
-#define FILE_END_Y 83		// Exclusive
-#define BOARD_START_X 40	// Inclusive
-#define BOARD_START_Y 0		// Inclusive
-#define BOARD_END_X 66		// Exclusive
-#define BOARD_END_Y 25		// Exclusive
+#define FILE_START_X 0
+#define FILE_START_Y 5
+#define FILE_END_Y 83
+#define BOARD_START_X 40
+#define BOARD_START_Y 0
+#define BOARD_END_X 66
+#define BOARD_END_Y 25
 /**
  * Text justification
  */
@@ -37,16 +39,21 @@ void tb_write(int, int, const char*, int);
 void draw_board_background();
 struct tb_cell* get_cell(int, int);
 
-FILE* file;
+FILE* infile;
 
 int main(int argc, char** argv) {
+	// Check for args
 	if (argc <= 1) {
 		cout << "Usage: edit <file>\n";
 		return 0;
 	}
 	const char* filename = argv[1];
-	//file = fopen(filename, "r");
-	//load_config(file);
+	infile = fopen(filename, "r");
+	if (!load_config(infile)) {
+		return 1;
+	}
+	fclose(infile);
+
 	tb_init();
 
 	// File editor header
@@ -56,6 +63,11 @@ int main(int argc, char** argv) {
 	tb_write(2, LEFT, "========================================", TB_WHITE);
 	tb_write(4, LEFT, "Red:", TB_WHITE);
 	tb_write(4, RIGHT, "Black:", TB_WHITE);
+	// Write moves to file editor
+	Node* cursor = get_movelist();
+	for (int line = FILE_START_Y; cursor; cursor = cursor->next) {
+		tb_write(line, ((line++ - FILE_START_Y) % 2 == 0) ? LEFT : RIGHT, cursor->move, TB_WHITE);
+	}
 	
 	draw_board_background();
 	

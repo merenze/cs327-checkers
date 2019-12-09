@@ -13,6 +13,8 @@
 
 #define LENGTH 100	// Maximum allowed length of a token.
 
+char** board;
+
 // Some global variables.
 int valid = 1;		// True if standard input is valid.
 int black_turn;		// True if currently black's turn, false if red's.
@@ -27,23 +29,28 @@ const char ERROR_RULES[] = "Input error (line %d): Invalid token ('%s') in rules
 
 // Some helper methods.
 char rtoc(int);
-int move_possible(char[8][8], int, int, int, int);
+int move_possible(char**, int, int, int, int);
 char ctoc(int);
 char rtoc(int);
-int is_empty(char[8][8], int, int);
-int is_red(char[8][8], int, int);
-int is_black(char[8][8], int, int);
+int is_empty(char**, int, int);
+int is_red(char**, int, int);
+int is_black(char**, int, int);
 void add_move(char*);
-int count_occurrences(char[8][8], char);
+int count_occurrences(char**, char);
 int board_valid();
 int get_rules(FILE*, char*);
 int get_board(FILE*, char*);
 int move_valid(char*);
 int get_moves(FILE*, char*);
-void print_board(FILE*, char[8][8]);
+void print_board(FILE*, char**);
 
 // The main dish.
 int load_config(FILE* infile) {
+	// Allocate space for the board first
+	board = (char**) malloc(8 * sizeof(char*));
+	for (int i = 0; i < 8; i++)
+		board[i] = (char*) malloc(8 * sizeof(char));
+	// For debugging
 	logfile = fopen("gameutil.log", "w");
 	// Use this to check for EOF
 	int has_input;
@@ -234,24 +241,24 @@ int is_multiple_jumps() {
 	return multiple_jumps;
 }
 
-int num_black_pawns(char G[8][8]) {
+int num_black_pawns(char** G) {
 	return count_occurrences(G, 'b');
 }
 
-int num_black_kings(char G[8][8]) {
+int num_black_kings(char** G) {
 	return count_occurrences(G, 'B');
 }
 
-int num_red_pawns(char G[8][8]) {
+int num_red_pawns(char** G) {
 	return count_occurrences(G, 'r');
 }
 
-int num_red_kings(char G[8][8]) {
+int num_red_kings(char** G) {
 	return count_occurrences(G, 'R');
 }
 
 // Count the number of occurrences of a char in board.
-int count_occurrences(char G[8][8], char ch) {
+int count_occurrences(char** G, char ch) {
 	int result = 0;
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
@@ -339,7 +346,7 @@ int move_valid(char* move) {
  *
  * Returns:	1 on success (move is legal). 0 on failure (move is illegal).
  */
-int do_move(char G[8][8], char* move) {
+int do_move(char** G, char* move) {
 	fprintf(logfile, "Call to do_move(%s)\n", move);
 	for (int i = 0; i + 5 < strlen(move); i += 4) {
 		// Convert rank and file into board row and column
@@ -468,7 +475,7 @@ Node* get_movelist() {
 	return movelist;
 }
 
-int get_score_for_board(char G[8][8], int do_black) {
+int get_score_for_board(char** G, int do_black) {
 	fprintf(logfile, "Call to get_score_for_board()\n");
 	fprintf(logfile, "get_score_for_board: Getting %s score for board\n", do_black ? "black" : "red");
 	print_board(logfile, G);
@@ -487,11 +494,13 @@ int get_score_for_board(char G[8][8], int do_black) {
 	return score;
 }
 
-int get_score_for_move(char G[8][8], char* move, int do_black, int D) {
+int get_score_for_move(char** G, char* move, int do_black, int D) {
 	fprintf(logfile, "Getting score for %s (lookahead %d)\n", move, D);
 	if (D < 0)
 		return 0;
-	char Gp[8][8];
+	char** Gp = (char**) malloc(8 * sizeof(char*));
+	for (int i = 0; i < 8; i++)
+		Gp[i] = (char*) malloc(8 * sizeof(char));
 	for (int i = 0; i < 8; i++)
 		for (int j = 0; j < 8; j++)
 			Gp[i][j] = G[i][j];
@@ -522,7 +531,7 @@ int get_score_for_move(char G[8][8], char* move, int do_black, int D) {
 	return score; 
 }
 
-Node* get_possible_moves(char G[8][8], int do_black) {
+Node* get_possible_moves(char** G, int do_black) {
 	fprintf(logfile, "Call to get_possible_moves(%s)\nConfiguration:\n", do_black ? "black" : "red");
 	print_board(logfile, G);
 	Node* result = NULL;
@@ -633,7 +642,7 @@ Node* get_possible_moves(char G[8][8], int do_black) {
 	return result;
 }
 
-int move_possible(char G[8][8], int row, int col, int row_off, int col_off) {
+int move_possible(char** G, int row, int col, int row_off, int col_off) {
 	fprintf(logfile, "move_possible: Checking possible: %c%c->%c%c... ", ctoc(col), rtoc(row), ctoc(col + col_off), rtoc(row + row_off)); 
 	fflush(logfile);
 	int do_black;
@@ -684,15 +693,15 @@ char ctoc(int c) {
 	return (c >= 0 && c < 8) ? ('a' + c) : '#';
 }
 
-int is_empty(char G[8][8], int row, int col) {
+int is_empty(char** G, int row, int col) {
 	return G[row][col] == '.' || G[row][col] == '"';
 }
 
-int is_red(char G[8][8], int row, int col) {
+int is_red(char** G, int row, int col) {
 	return G[row][col] == 'r' || G[row][col] == 'R';
 }
 
-int is_black(char G[8][8], int row, int col) {
+int is_black(char** G, int row, int col) {
 	return G[row][col] == 'b' || G[row][col] == 'B';
 }
 
@@ -701,7 +710,7 @@ int get_num_moves() {
 	return num_moves;
 }
 // For debugging
-void print_board(FILE* file, char G[8][8]) {
+void print_board(FILE* file, char** G) {
 	fprintf(file, "  a b c d e f g h \n");
 	for (int row = 0; row < 8; row++) {
 		fprintf(file, "%d ", 8 - row);
@@ -710,4 +719,8 @@ void print_board(FILE* file, char G[8][8]) {
 		}
 		fprintf(file, "\n");
 	}
+}
+
+char** get_board() {
+	return board;
 }

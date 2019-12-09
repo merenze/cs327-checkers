@@ -121,9 +121,8 @@ int main(int argc, char** argv) {
 			continue;
 
 		// Cursor down
-		if (event->key == TB_KEY_ARROW_DOWN ) {
-			// If next line exists
-			if (map[cursor.line + 1][cursor.justify == LEFT ? 0 : 1]) {
+		if (event->key == TB_KEY_ARROW_DOWN) {
+			if (cursor.line <= 1000 && map[cursor.line + 1][cursor.justify == LEFT ? 0 : 1]) {
 				if (cursor.line < last_line)
 					highlight_move(0);
 				else
@@ -133,10 +132,15 @@ int main(int argc, char** argv) {
 			}
 		}
 		// Cursor up
-		else if (event->key == TB_KEY_ARROW_UP && cursor.line > 0) {
-			highlight_move(0);
-			cursor.line -= 1;
-			highlight_move(1);
+		else if (event->key == TB_KEY_ARROW_UP) {
+			if (cursor.line > 0 && map[cursor.line - 1][cursor.justify == LEFT ? 0 : 1]) {
+				if (cursor.line > first_line)
+					highlight_move(0);
+				else
+					scroll(UP);
+				cursor.line -= 1;
+				highlight_move(1);
+			}
 		}
 		// Cursor right
 		else if (event->key == TB_KEY_ARROW_RIGHT && cursor.justify == LEFT) {

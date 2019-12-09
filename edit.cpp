@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
 		}
 		// Cursor up
 		else if (event->key == TB_KEY_ARROW_UP) {
-			if (cursor.line > 0 && move_map[cursor.line - 1][cursor.justify == LEFT ? 0 : 1]) {
+			if (cursor.line > 0) {
 				if (cursor.line > first_line)
 					highlight_move(0);
 				else
@@ -166,16 +166,38 @@ int main(int argc, char** argv) {
 			}
 		}
 		// Cursor right
-		else if (event->key == TB_KEY_ARROW_RIGHT && cursor.justify == LEFT) {
-			highlight_move(0);
-			cursor.justify = RIGHT;
-			highlight_move(1);
+		else if (event->key == TB_KEY_ARROW_RIGHT) {
+			if (cursor.justify == LEFT) {
+				highlight_move(0);
+				cursor.justify = RIGHT;
+				highlight_move(1);
+			} else if (cursor.justify == RIGHT) {
+				if (cursor.line < tb_height() - 1 + first_line - FILE_START_Y)
+					highlight_move(0);
+				else
+					scroll(DOWN);
+				cursor.line += 1;
+				cursor.justify = LEFT;
+				highlight_move(1);
+			}
 		}
 		// Cursor left
-		else if (event->key == TB_KEY_ARROW_LEFT && cursor.justify == RIGHT) {
-			highlight_move(0);
-			cursor.justify = LEFT;
-			highlight_move(1);
+		else if (event->key == TB_KEY_ARROW_LEFT) {
+			if (cursor.justify == RIGHT) {
+				highlight_move(0);
+				cursor.justify = LEFT;
+				highlight_move(1);
+			} else if (cursor.justify == LEFT) {
+				if (cursor.line > 0) {
+					if (cursor.line > first_line)
+						highlight_move(0);
+					else
+						scroll(UP);
+					cursor.line -= 1;
+					cursor.justify = RIGHT;
+					highlight_move(1);
+				}
+			}
 		}
 		// Quit
 		if (event->key == TB_KEY_ESC) {

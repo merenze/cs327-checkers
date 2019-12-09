@@ -65,5 +65,9 @@ int get_score_for_move(char**, char*, int, int);
  * Get list of moves
  */
 Node* get_movelist();
+/**
+ * Check whether a move string is valid
+ */
+int move_valid(char*);
 
 #endif

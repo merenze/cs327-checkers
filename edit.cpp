@@ -44,6 +44,9 @@ struct Cursor {
 	int justify;
 };
 
+/**
+ * Helper functions
+ */
 void tb_write(int, int, const char*, int);
 void draw_board_background();
 struct tb_cell* get_cell(int, int);
@@ -56,7 +59,9 @@ void update_line_number();
 char** copy_board(char**);
 void map_boards();
 void draw_board();
-
+void edit();
+void clear_move();
+void set_mode(int);
 /**
  * Cursor
  */
@@ -70,7 +75,7 @@ int first_line = 0;
 /**
  * Map of moves.
  */
-Node* move_map[1000][2];
+char* move_map[1000][2];
 
 /**
  * Map of boards.
@@ -109,8 +114,7 @@ int main(int argc, char** argv) {
 	// File editor header
 	tb_write(0, LEFT, filename, TB_WHITE);
 	tb_write(0, RIGHT, "Line:    ", TB_WHITE);
-	tb_write(1, LEFT, "Arrow keys: move cursor", TB_WHITE);
-	tb_write(1, RIGHT, "<ESC>: Quit", TB_WHITE);
+	set_mode(0);
 	tb_write(2, LEFT, "========================================", TB_WHITE);
 	tb_write(FILE_START_Y - 1, LEFT, "Red:", TB_WHITE);
 	tb_write(FILE_START_Y - 1, RIGHT, "Black:", TB_WHITE);
@@ -199,8 +203,11 @@ int main(int argc, char** argv) {
 				}
 			}
 		}
+		// Edit
+		else if (event->key == TB_KEY_ENTER)
+			edit();
 		// Quit
-		if (event->key == TB_KEY_ESC) {
+		else if (event->key == TB_KEY_ESC) {
 			tb_shutdown();
 			break;
 		}
@@ -252,10 +259,10 @@ void draw_board_background() {
 void map_moves() {
 	Node* node = get_movelist();
 	for (int i = 0; node; node = node->next) {
-		move_map[i][0] = node;
+		move_map[i][0] = node->move;
 		if (node->next) {
 			node = node->next;
-			move_map[i++][1] = node;
+			move_map[i++][1] = node->move;
 		}
 	}
 }
@@ -270,7 +277,7 @@ void map_boards() {
 			if (valid) {
 				board_map[i][j] = copy_board(board);
 				valid_map[i][j] = valid;
-				valid = do_move(board, move_map[i][j]->move, black_turn);
+				valid = do_move(board, move_map[i][j], black_turn);
 				black_turn = !black_turn;
 			} else {
 				board_map[i][j] = board;
@@ -326,9 +333,9 @@ void draw_board() {
 
 void write_moves() {
 	for (int i = first_line; move_map[i][0]; i++)
-		tb_write(FILE_START_Y + i - first_line, LEFT, move_map[i][0]->move, valid_map[i][0] ? TB_GREEN : TB_RED);
+		tb_write(FILE_START_Y + i - first_line, LEFT, move_map[i][0], valid_map[i][0] ? TB_GREEN : TB_RED);
 	for (int i = first_line; move_map[i][1]; i++)
-		tb_write(FILE_START_Y + i - first_line, RIGHT, move_map[i][1]->move, valid_map[i][0] ? TB_GREEN : TB_RED);
+		tb_write(FILE_START_Y + i - first_line, RIGHT, move_map[i][1], valid_map[i][0] ? TB_GREEN : TB_RED);
 }
 
 void update_line_number() {
@@ -350,4 +357,65 @@ char** copy_board(char** board) {
 		for (int j = 0; j < 8; j++)
 			G[i][j] = board[i][j];
 	return G;
+}
+
+void edit() {
+	set_mode(1);
+	string str = "";
+	const char* original = move_map[cursor.line][cursor.justify == LEFT ? 0 : 1];
+	tb_event* event = (tb_event*) malloc(sizeof(event));
+	clear_move();
+	while (true) {
+		char* partial = (char*) malloc(20 * sizeof(char));
+		strcpy(partial, str.c_str());
+		tb_write(cursor.line + FILE_START_Y, cursor.justify, partial, TB_WHITE);
+		tb_poll_event(event);
+		if (event->type != TB_EVENT_KEY)
+			continue;
+		// Cancel
+		if (event->key == TB_KEY_ESC) {
+			free(event);
+			clear_move();
+			tb_write(cursor.line + FILE_START_Y, cursor.justify, original, valid_map[cursor.line][cursor.justify == LEFT ? 0 : 1] ? TB_GREEN : TB_RED);
+			highlight_move(1);
+			set_mode(0);
+			return;
+		}
+		// Save
+		if (event->key == TB_KEY_ENTER)
+			break;
+		str += (char) event->key;
+	}
+	free(event);
+	if (move_valid((char*) str.c_str()))
+		move_map[cursor.line][cursor.justify == LEFT ? 0 : 1] = const_cast<char*>(str.c_str());
+	else {
+		clear_move();
+		move_map[cursor.line][cursor.justify == LEFT ? 0 : 1] = const_cast<char*>(original);
+	}
+	write_moves();
+	highlight_move(1);
+	set_mode(0);
+}
+
+void clear_move() {
+	if (cursor.justify == LEFT)
+		for (int i = 0; get_cell(i, cursor.line)->ch != ' '; i++)
+			tb_change_cell(i, cursor.line, ' ', TB_WHITE, TB_DEFAULT);
+	else if (cursor.justify == RIGHT)
+		for (int i = BOARD_START_X - 1; get_cell(i, cursor.line)->ch != ' '; i--)
+			tb_change_cell(i, cursor.line, ' ', TB_WHITE, TB_DEFAULT);
+}
+
+void set_mode(int mode) {
+	for (int i = 0; i < BOARD_START_X; i++) {
+		tb_change_cell(i, 1, ' ', TB_DEFAULT, TB_DEFAULT);
+	}
+	if (mode == 0) {
+		tb_write(1, LEFT, "Arrow keys: move cursor", TB_WHITE);
+		tb_write(1, RIGHT, "<ESC>: Quit", TB_WHITE);
+	} else if (mode == 1) {
+		tb_write(1, LEFT, "<ENTER>: Save", TB_WHITE);
+		tb_write(1, RIGHT, "<ESC>: Cancel", TB_WHITE);
+	}
 }

@@ -39,7 +39,6 @@ int count_occurrences(char**, char);
 int board_valid();
 int get_rules(FILE*, char*);
 int get_layout(FILE*, char*);
-int move_valid(char*);
 int get_moves(FILE*, char*);
 void print_board(FILE*, char**);
 

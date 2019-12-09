@@ -18,7 +18,7 @@ using namespace std;
  * Start is inclusive, end is exclusive.
  */
 #define FILE_START_X 0
-#define FILE_START_Y 5
+#define FILE_START_Y 4
 #define FILE_END_Y 83
 #define BOARD_START_X 40
 #define BOARD_START_Y 0
@@ -38,7 +38,9 @@ struct Cursor {
 void tb_write(int, int, const char*, int);
 void draw_board_background();
 struct tb_cell* get_cell(int, int);
+void map_moves();
 
+Node* map[1000][2];
 FILE* infile;
 
 int main(int argc, char** argv) {
@@ -62,18 +64,12 @@ int main(int argc, char** argv) {
 	tb_write(1, LEFT, "Arrow keys: move cursor", TB_WHITE);
 	tb_write(1, RIGHT, "<ESC>: Quit", TB_WHITE);
 	tb_write(2, LEFT, "========================================", TB_WHITE);
-	tb_write(4, LEFT, "Red:", TB_WHITE);
-	tb_write(4, RIGHT, "Black:", TB_WHITE);
+	tb_write(FILE_START_Y - 1, LEFT, "Red:", TB_WHITE);
+	tb_write(FILE_START_Y - 1, RIGHT, "Black:", TB_WHITE);
 
 	// Write moves to file editor
-	Node* cursor = get_movelist();
 
-	tb_write(FILE_START_Y, LEFT, cursor == NULL ? "Cursor is null" : "Cursor ain't null", TB_WHITE);
-/*
-	for (int line = FILE_START_Y; cursor; cursor = cursor->next) {
-		tb_write(line, ((line++ - FILE_START_Y) % 2 == 0) ? LEFT : RIGHT, cursor->move, TB_WHITE);
-	}
-*/
+
 	draw_board_background();
 	
 
@@ -128,4 +124,15 @@ void draw_board_background() {
 		}
 	}
 	tb_present();
+}
+
+void map_moves() {
+	Node* cursor = get_movelist();
+	for (int i = 0; cursor; cursor = cursor->next) {
+		map[i][0] = cursor;
+		if (cursor->next) {
+			cursor = cursor->next;
+			map[i++][1] = cursor;
+		}
+	}
 }

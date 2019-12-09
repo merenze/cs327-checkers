@@ -121,13 +121,14 @@ int main(int argc, char** argv) {
 			continue;
 
 		// Cursor down
-		if (event->key == TB_KEY_ARROW_DOWN && cursor.line < FILE_END_Y) {
+		if (event->key == TB_KEY_ARROW_DOWN ) {
 			// If next line exists
 			if (map[cursor.line + 1][cursor.justify == LEFT ? 0 : 1]) {
-				highlight_move(0);
-				cursor.line += 1;
-				if (cursor.line >= last_line)
+				if (cursor.line < last_line)
+					highlight_move(0);
+				else
 					scroll(DOWN);
+				cursor.line += 1;
 				highlight_move(1);
 			}
 		}
@@ -211,9 +212,9 @@ void map_moves() {
 void highlight_move(int on) {
 	char ch = 0;
 	if (cursor.justify == LEFT)
-		for (int i = 0; highlight_cell(i, cursor.line + FILE_START_Y, on); i++);
+		for (int i = 0; highlight_cell(i, cursor.line + FILE_START_Y - first_line, on); i++);
 	else if (cursor.justify == RIGHT)
-		for (int i = BOARD_START_X - 1; highlight_cell(i, cursor.line + FILE_START_Y, on); i--);
+		for (int i = BOARD_START_X - 1; highlight_cell(i, cursor.line + FILE_START_Y - first_line, on); i--);
 	tb_present();
 }
 

@@ -18,7 +18,7 @@ char** board;
 // Some global variables.
 int valid = 1;		// True if standard input is valid.
 int black_turn;		// True if currently black's turn, false if red's.
-int multiple_jumps;	// True if multiple jumps are allowed.
+int multiple_jumps;	// True if mulmultipletiple jumps are allowed.
 int no_capture;		// True if capture rule not enforced.
 int flipped;		// True if board is flipped configuration
 int num_moves;		// Number of moves in movelist

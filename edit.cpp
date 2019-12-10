@@ -18,12 +18,12 @@ using namespace std;
  * Start is inclusive, end is exclusive.
  */
 #define FILE_START_X 0
-#define FILE_START_Y 4
+#define FILE_START_Y 6
 #define BOARD_START_X 40
 #define BOARD_START_Y 0
 #define BOARD_END_X 65
 #define BOARD_END_Y 24
-
+#define VISUAL_CURSOR FILE_START_Y + cursor.line - first_line
 /**
  * Text justification
  */
@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
 		int height = tb_height();
 		if (event->type == TB_EVENT_RESIZE) {
 			write_moves();
-			if (tb_height() < cursor.line - first_line + FILE_START_Y)
+			if (tb_height() < VISUAL_CURSOR)
 				cursor.line = tb_height() - 1;
 			highlight_move(1);
 			continue;
@@ -150,7 +150,7 @@ int main(int argc, char** argv) {
 		// Cursor down
 		if (event->key == TB_KEY_ARROW_DOWN) {
 			if (cursor.line <= 1000 && move_map[cursor.line + 1][cursor.justify == LEFT ? 0 : 1]) {
-				if (cursor.line < tb_height() - 1 + first_line - FILE_START_Y)
+				if (VISUAL_CURSOR < tb_height() - 1)
 					highlight_move(0);
 				else
 					scroll(DOWN);
@@ -176,7 +176,7 @@ int main(int argc, char** argv) {
 				cursor.justify = RIGHT;
 				highlight_move(1);
 			} else if (cursor.justify == RIGHT) {
-				if (cursor.line < tb_height() - 1 + first_line - FILE_START_Y)
+				if (VISUAL_CURSOR < tb_height())
 					highlight_move(0);
 				else
 					scroll(DOWN);
@@ -276,8 +276,7 @@ void map_boards() {
 		for (int j = 0; j < 2 && move_map[i][j]; j++) {
 			if (valid) {
 				board_map[i][j] = copy_board(board);
-				valid_map[i][j] = valid;
-				valid = do_move(board, move_map[i][j], black_turn);
+				valid_map[i][j] = valid = valid && do_move(board, move_map[i][j], black_turn);
 				black_turn = !black_turn;
 			} else {
 				board_map[i][j] = board;
@@ -365,18 +364,20 @@ void edit() {
 	const char* original = move_map[cursor.line][cursor.justify == LEFT ? 0 : 1];
 	tb_event* event = (tb_event*) malloc(sizeof(event));
 	clear_move();
+	// Edit mode
 	while (true) {
-		char* partial = (char*) malloc(20 * sizeof(char));
-		strcpy(partial, str.c_str());
-		tb_write(cursor.line + FILE_START_Y, cursor.justify, partial, TB_WHITE);
+		tb_write(FILE_START_Y + cursor.line - first_line, cursor.justify, str.c_str(), TB_WHITE);
 		tb_poll_event(event);
 		if (event->type != TB_EVENT_KEY)
 			continue;
 		// Cancel
 		if (event->key == TB_KEY_ESC) {
 			free(event);
-			clear_move();
-			tb_write(cursor.line + FILE_START_Y, cursor.justify, original, valid_map[cursor.line][cursor.justify == LEFT ? 0 : 1] ? TB_GREEN : TB_RED);
+			// Erase written move
+			for (int i = cursor.justify == LEFT ? 0 : BOARD_START_X - 1; i < str.length(); cursor.justify == LEFT ? i++ : i--)
+				tb_change_cell(i, FILE_START_Y + cursor.line - first_line, ' ', TB_WHITE, TB_DEFAULT);
+			// Rewrite original move
+			tb_write(FILE_START_Y + cursor.line - first_line, cursor.justify, original, TB_WHITE);
 			highlight_move(1);
 			set_mode(0);
 			return;
@@ -384,15 +385,22 @@ void edit() {
 		// Save
 		if (event->key == TB_KEY_ENTER)
 			break;
-		str += (char) event->key;
+		if (event->key == TB_KEY_BACKSPACE) {
+			str = str.substr(0, str.length() - 1);
+			clear_move();
+		}
+		if (event->ch)
+			str += (char) event->ch;
 	}
+	// After edit mode
 	free(event);
 	if (move_valid((char*) str.c_str()))
 		move_map[cursor.line][cursor.justify == LEFT ? 0 : 1] = const_cast<char*>(str.c_str());
 	else {
-		clear_move();
-		move_map[cursor.line][cursor.justify == LEFT ? 0 : 1] = const_cast<char*>(original);
+		for (int i = cursor.justify == LEFT ? 0 : BOARD_START_X - 1; i < str.length(); cursor.justify == LEFT ? i++ : i--)
+		tb_change_cell(i, FILE_START_Y + cursor.line - first_line, ' ', TB_WHITE, TB_DEFAULT);
 	}
+	map_boards();
 	write_moves();
 	highlight_move(1);
 	set_mode(0);
@@ -401,10 +409,10 @@ void edit() {
 void clear_move() {
 	if (cursor.justify == LEFT)
 		for (int i = 0; get_cell(i, cursor.line)->ch != ' '; i++)
-			tb_change_cell(i, cursor.line, ' ', TB_WHITE, TB_DEFAULT);
+			tb_change_cell(i, FILE_START_Y + cursor.line - first_line, ' ', TB_WHITE, TB_DEFAULT);
 	else if (cursor.justify == RIGHT)
 		for (int i = BOARD_START_X - 1; get_cell(i, cursor.line)->ch != ' '; i--)
-			tb_change_cell(i, cursor.line, ' ', TB_WHITE, TB_DEFAULT);
+			tb_change_cell(i, FILE_START_Y + cursor.line - first_line, ' ', TB_WHITE, TB_DEFAULT);
 }
 
 void set_mode(int mode) {

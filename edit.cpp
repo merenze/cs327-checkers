@@ -276,13 +276,9 @@ void map_boards() {
 	int valid = 1;
 	for (int i = 0; move_map[i][0]; i++) {
 		for (int j = 0; j < 2 && move_map[i][j]; j++) {
-			if (valid) {
-				board_map[i][j] = copy_board(board);
-				valid_map[i][j] = valid =  do_move(board, move_map[i][j], black_turn);
-				black_turn = !black_turn;
-			} else {
-				board_map[i][j] = board;
-			}
+			board_map[i][j] = copy_board(board);
+			valid_map[i][j] = valid = valid && do_move(board, move_map[i][j], black_turn);
+			black_turn = !black_turn;
 		}
 	}
 }

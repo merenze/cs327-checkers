@@ -1,6 +1,8 @@
 # Executables
 info
 change
+rankmoves
+edit
 
 # Output files 
 *.txt
@@ -10,6 +12,7 @@ change
 part2/
 part1/
 part3/
+part4/
 
 # Temp programs
 hello

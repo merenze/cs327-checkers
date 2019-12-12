@@ -46,14 +46,16 @@ int main(int argc, char** argv) {
 	if (!load_config(infile)) {
 		return 1;
 	}
+	int black_turn = is_black_turn();
 	// Do moves
 	printf("Input file has %d moves\nProcessing %d moves\n", get_num_moves(), max < get_num_moves() ? max : get_num_moves());
 	Node* cursor = get_movelist();
 	for (int j = 1; cursor && j++ <= max; cursor = cursor->next) {
-		if (!do_move(get_board(), cursor->move)) {
+		if (!do_move(get_board(), cursor->move, black_turn)) {
 			printf("Move %d is illegal: %s\n", j, cursor->move);	
 			break;
 		}
+		black_turn = !black_turn;
 	}
 	if (!cursor) {
 		printf("All moves legal\n");

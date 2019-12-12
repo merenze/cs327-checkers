@@ -18,7 +18,7 @@ using namespace std;
  * Start is inclusive, end is exclusive.
  */
 #define FILE_START_X 0
-#define FILE_START_Y 6
+#define FILE_START_Y 4
 #define BOARD_START_X 40
 #define BOARD_START_Y 0
 #define BOARD_END_X 65
@@ -288,9 +288,9 @@ void map_boards() {
 void highlight_move(int on) {
 	char ch = 0;
 	if (cursor.justify == LEFT)
-		for (int i = 0; highlight_cell(i, cursor.line + FILE_START_Y - first_line, valid_map[cursor.line][cursor.justify == LEFT ? 1 : 2] ? TB_GREEN : TB_RED, on); i++);
+		for (int i = 0; highlight_cell(i, VISUAL_CURSOR, valid_map[cursor.line][cursor.justify == LEFT ? 1 : 2] ? TB_GREEN : TB_RED, on); i++);
 	else if (cursor.justify == RIGHT)
-		for (int i = BOARD_START_X - 1; highlight_cell(i, cursor.line + FILE_START_Y - first_line, valid_map[cursor.line][cursor.justify == LEFT ? 1 : 2] ? TB_GREEN : TB_RED, on); i--);
+		for (int i = BOARD_START_X - 1; highlight_cell(i, VISUAL_CURSOR, valid_map[cursor.line][cursor.justify == LEFT ? 1 : 2] ? TB_GREEN : TB_RED, on); i--);
 	tb_present();
 }
 
@@ -334,7 +334,7 @@ void write_moves() {
 	for (int i = first_line; move_map[i][0]; i++)
 		tb_write(FILE_START_Y + i - first_line, LEFT, move_map[i][0], valid_map[i][0] ? TB_GREEN : TB_RED);
 	for (int i = first_line; move_map[i][1]; i++)
-		tb_write(FILE_START_Y + i - first_line, RIGHT, move_map[i][1], valid_map[i][0] ? TB_GREEN : TB_RED);
+		tb_write(FILE_START_Y + i - first_line, RIGHT, move_map[i][1], valid_map[i][1] ? TB_GREEN : TB_RED);
 }
 
 void update_line_number() {

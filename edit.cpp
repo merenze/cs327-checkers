@@ -116,8 +116,8 @@ int main(int argc, char** argv) {
 	tb_write(0, RIGHT, "Line:    ", TB_WHITE);
 	set_mode(0);
 	tb_write(2, LEFT, "========================================", TB_WHITE);
-	tb_write(FILE_START_Y - 1, LEFT, "Red:", TB_WHITE);
-	tb_write(FILE_START_Y - 1, RIGHT, "Black:", TB_WHITE);
+	tb_write(FILE_START_Y - 1, LEFT, !is_black_turn() ? "Red:" : "Black:", TB_WHITE);
+	tb_write(FILE_START_Y - 1, RIGHT, !is_black_turn() ? "Black:" : "Red", TB_WHITE);
 	// Write moves to file editor
 	write_moves();
 	// Set initial cursor position
@@ -138,6 +138,8 @@ int main(int argc, char** argv) {
 		int height = tb_height();
 		if (event->type == TB_EVENT_RESIZE) {
 			write_moves();
+			draw_board_background();
+			draw_board();
 			if (tb_height() < VISUAL_CURSOR)
 				cursor.line = tb_height() - 1;
 			highlight_move(1);
@@ -276,7 +278,7 @@ void map_boards() {
 		for (int j = 0; j < 2 && move_map[i][j]; j++) {
 			if (valid) {
 				board_map[i][j] = copy_board(board);
-				valid_map[i][j] = valid = valid && do_move(board, move_map[i][j], black_turn);
+				valid_map[i][j] = valid =  do_move(board, move_map[i][j], black_turn);
 				black_turn = !black_turn;
 			} else {
 				board_map[i][j] = board;

@@ -21,4 +21,8 @@ Options:
 -m max
 	Maximum number of moves that should be processed.
 
+====================================
+Part four is edit.cpp. With a valid configuration, the gameboard is initializedand the terminal is divided into a move view and a board view. Scrolling through moves allows the user to see the board after that move is executed.
 
+Run with:
+edit <input file>

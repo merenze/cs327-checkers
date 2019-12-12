@@ -16,3 +16,8 @@ inpututil.c	Contains utility functions for reading tokens from standard input.
 
 inpututil.h	Declares input utility functions for inpututil.c.
 
+movelist.c	Contains utility functions for handling list of moves.
+
+movelist.c	Declares movelist utility functions.
+
+edit.cpp	Visually run through and edit a game of checkers.

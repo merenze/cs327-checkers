@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 	printf("Input file has %d moves\nProcessing %d moves\n", get_num_moves(), max < get_num_moves() ? max : get_num_moves());
 	Node* cursor = get_movelist();
 	for (int j = 1; cursor && j++ <= max; cursor = cursor->next) {
-		if (!do_move(board, cursor->move)) {
+		if (!do_move(get_board(), cursor->move)) {
 			printf("Move %d is illegal: %s\n", j, cursor->move);	
 			break;
 		}
@@ -82,7 +82,7 @@ void create_human_readable() {
 	for (int row = 0; row < 8; row++) {
 		fprintf(hfile, "%d |", 8 - row);
 		for(int col = 0; col < 8; col++) {
-			fprintf(hfile, " %c |", board[row][col]);
+			fprintf(hfile, " %c |", get_board()[row][col]);
 		}
 		fprintf(hfile, " %d\n%s", 8 - row, border);
 	}

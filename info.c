@@ -13,6 +13,7 @@ int main() {
 	if (!load_config(stdin)) {
 		return 1;
 	}
+	char** board = get_board();
 	printf(
 			"VALID INPUT\nInitial configuration:\nTurn: %s\nRed: %d kings, %d pawns\nBlack: %d kings, %d pawns\n", 
 			(is_black_turn()) ? "black" : "red", 
